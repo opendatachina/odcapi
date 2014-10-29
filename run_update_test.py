@@ -502,5 +502,25 @@ class RunUpdateTestCase(unittest.TestCase):
         import run_update
         self.assertTrue(os.path.exists(run_update.ORG_SOURCES))
 
+    def test_utf8_noncode_projects(self):
+        ''' Test that utf8 project descriptions match exisiting projects.
+        '''
+        from factories import OrganizationFactory, ProjectFactory
+
+
+        philly = OrganizationFactory(name='Code for Philly', projects_list_url="http://codeforphilly.org/projects.csv")
+        old_project = ProjectFactory(name='Philly Map of Shame', organization_name='Code for Philly', description=u'PHL Map of Shame is a citizen-led project to map the impact of the School Reform Commission\u2019s \u201cdoomsday budget\u201d on students and parents. We will visualize complaints filed with the Pennsylvania Department of Education.', categories='Education, CivicEngagement', type='', link_url='http://phillymapofshame.org')
+        self.db.session.flush()
+
+        def response_content(url, request):
+            if url.geturl() == 'http://codeforphilly.org/projects.csv':
+                return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"Philly Map of Shame","PHL Map of Shame is a citizen-led project to map the impact of the School Reform Commission\xe2\x80\x99s \xe2\x80\x9cdoomsday budget\xe2\x80\x9d on students and parents. We will visualize complaints filed with the Pennsylvania Department of Education.","http://phillymapofshame.org","","","Education, CivicEngagement"''')
+            
+        with HTTMock(response_content):
+            import run_update
+            projects = run_update.get_projects(philly)
+
+            assert projects[0]['last_updated'] == None
+
 if __name__ == '__main__':
     unittest.main()

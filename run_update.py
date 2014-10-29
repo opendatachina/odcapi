@@ -309,6 +309,9 @@ def update_project_info(project):
             # project gets existing last_updated
             project['last_updated'] = existing_project.last_updated
 
+            # be ready for utf8 bites
+            project['description'] = project['description'].decode('utf-8')
+
             # unless one of the fields has been updated
             if project['description'] != existing_project.description:
                 project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
