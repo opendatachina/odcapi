@@ -243,8 +243,8 @@ class ApiTest(unittest.TestCase):
 
         response = self.app.get('/api/organizations/Collective%20of%20Ericas')
         response_json = json.loads(response.data)
-        self.assertEqual(response_json['current_stories'][0]['title'], 'First Story')
-        self.assertEqual(response_json['current_stories'][1]['title'], 'Second Story')
+        self.assertEqual(response_json['current_stories'][0]['title'], 'Second Story')
+        self.assertEqual(response_json['current_stories'][1]['title'], 'First Story')
 
     def test_headers(self):
         OrganizationFactory()
