@@ -402,6 +402,19 @@ class ApiTest(unittest.TestCase):
         assert response['current_stories'][0]['id'] == 2
         assert response['current_stories'][1]['id'] == 1
 
+    def test_orgs_stories_order(self):
+        organization = OrganizationFactory(name="Code for America")
+        StoryFactory(organization_name="Code for America")
+        StoryFactory(organization_name="Code for America")
+        StoryFactory(organization_name="Code for America")
+        db.session.flush()
+
+        response = self.app.get('/api/organizations/Code for America/stories')
+        response = json.loads(response.data)
+        assert response['objects'][0]['id'] == 3
+        assert response['objects'][1]['id'] == 2
+        assert response['objects'][2]['id'] == 1
+
     def test_events(self):
         '''
         Return all events past/future ordered by oldest to newest

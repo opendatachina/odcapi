@@ -664,7 +664,7 @@ def get_orgs_stories(organization_name):
         return "Organization not found", 404
 
     # Get story objects
-    query = Story.query.filter_by(organization_name=organization.name)
+    query = Story.query.filter_by(organization_name=organization.name).order_by(desc(Story.id))
     response = paged_results(query, int(request.args.get('page', 1)), int(request.args.get('per_page', 25)))
     return jsonify(response)
 
