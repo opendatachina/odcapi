@@ -139,7 +139,7 @@ class Organization(db.Model):
         '''
             Return the two most current stories
         '''
-        current_stories = Story.query.filter_by(organization_name=self.name).limit(2).all()
+        current_stories = Story.query.filter_by(organization_name=self.name).order_by(desc(Story.id)).limit(2).all()
         current_stories_json = [row.asdict() for row in current_stories]
         return current_stories_json
 
