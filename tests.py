@@ -369,6 +369,18 @@ class ApiTest(unittest.TestCase):
         assert isinstance(response['objects'][0]['title'], unicode)
         assert isinstance(response['objects'][0]['type'], unicode)
 
+    def test_stories_order(self):
+        StoryFactory()
+        StoryFactory()
+        StoryFactory()
+        db.session.flush()
+
+        response = self.app.get('/api/stories')
+        response = json.loads(response.data)
+        assert (response['objects'][0]['id'] == 3)
+        assert (response['objects'][1]['id'] == 2)
+        assert (response['objects'][2]['id'] == 1)
+
     def test_orgs_stories(self):
         organization = OrganizationFactory(name="Code for America")
         story = StoryFactory(organization_name="Code for America")

@@ -902,7 +902,7 @@ def get_stories(id=None):
         return jsonify(story.asdict(True))
 
     # Get a bunch of stories.
-    query = db.session.query(Story)
+    query = db.session.query(Story).order_by(desc(Story.id))
 
     for attr, value in filters.iteritems():
         if 'organization' in attr:
