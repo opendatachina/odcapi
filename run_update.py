@@ -462,7 +462,7 @@ def get_issues(org_name):
 
         # Get github issues api url
         _, host, path, _, _, _ = urlparse(project.code_url)
-        issues_url = 'https://api.github.com/repos' + path + '/issues'
+        issues_url = 'https://api.github.com/repos' + path + '/issues?per_page=100'
 
         # Ping github's api for project issues
         got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
