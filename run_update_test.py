@@ -480,7 +480,7 @@ class RunUpdateTestCase(unittest.TestCase):
         gdocs = OrganizationFactory(projects_list_url="http://www.gdocs.com/projects.csv")
 
         def response_content(url, request):
-            if url.netloc == 'www.civicorganization5.com':
+            if url.netloc == 'www.civicorganization6.com':
                 return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","http://google.com","",""''')
             if url.netloc == 'www.gdocs.com':
                 return response(200, '''name,description,link_url,code_url,type,categories\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",,,web service,"project management, civic hacking"''')
@@ -521,6 +521,29 @@ class RunUpdateTestCase(unittest.TestCase):
             projects = run_update.get_projects(philly)
 
             assert projects[0]['last_updated'] == None
+
+    def test_issue_paging(self):
+        ''' test that issues are following page links '''
+        from factories import OrganizationFactory, ProjectFactory
+
+        organization = OrganizationFactory(name='Code for America', projects_list_url="http://codeforamerica.org/projects.csv")
+        project = ProjectFactory(organization_name='Code for America',code_url='https://github.com/TESTORG/TESTPROJECT')
+
+        def response_content(url, request):
+            if url.geturl() == 'https://api.github.com/repos/TESTORG/TESTPROJECT/issues':
+                content = '''[{"number": 2,"title": "TEST TITLE 2","body": "TEST BODY 2","labels": [], "html_url":""}]'''
+                headers = {"Link": '<https://api.github.com/repos/TESTORG/TESTPROJECT/issues?page=2>"; rel="next"','ETag':'TEST ETAG'}
+                return response(200, content, headers)
+
+            elif url.geturl() == 'https://api.github.com/repos/TESTORG/TESTPROJECT/issues?page=2':
+                content = '''[{"number": 2,"title": "TEST TITLE 2","body": "TEST BODY 2","labels": [], "html_url":""}]'''
+                return response(200, content)
+
+
+        with HTTMock(response_content):
+            import run_update
+            issues, labels = run_update.get_issues(organization.name)
+            assert (len(issues) == 2)
 
 if __name__ == '__main__':
     unittest.main()

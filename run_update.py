@@ -466,7 +466,7 @@ def get_issues(org_name):
 
         # Ping github's api for project issues
         got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
-
+        
         # Verify if content has not been modified since last run
         if got.status_code == 304:
             db.session.execute(db.update(Issue, values={'keep': True}).where(Issue.project_id == project.id))
