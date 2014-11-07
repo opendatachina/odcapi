@@ -182,7 +182,7 @@ def get_stories(organization):
     return [dict(title=e.title, link=e.link, type="blog", organization_name=organization.name)
             for e in d.entries[:2]]
 
-def get_adjoined_json_lists(response):
+def get_adjoined_json_lists(response, headers=None):
     ''' Github uses the Link header (RFC 5988) to do pagination.
 
         If we see a Link header, assume we're dealing with lists
@@ -192,7 +192,7 @@ def get_adjoined_json_lists(response):
 
     if type(result) is list:
         while 'next' in response.links:
-            response = get(response.links['next']['url'])
+            response = get_github_api(response.links['next']['url'], headers=headers)
             result += response.json()
 
     return result
@@ -462,7 +462,7 @@ def get_issues(org_name):
 
         # Get github issues api url
         _, host, path, _, _, _ = urlparse(project.code_url)
-        issues_url = 'https://api.github.com/repos' + path + '/issues?per_page=100'
+        issues_url = 'https://api.github.com/repos' + path + '/issues'
 
         # Ping github's api for project issues
         got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
@@ -476,8 +476,11 @@ def get_issues(org_name):
             # Update project's last_updated_issue field
             project.last_updated_issues = got.headers['ETag']
             db.session.add(project)
+
+            responses = get_adjoined_json_lists(got, headers={'If-None-Match': project.last_updated_issues})
+
             # Save each issue in response
-            for issue in got.json():
+            for issue in responses:
                 # Type check the issue, we are expecting a dictionary
                 if type(issue) == type({}):
                     # Pull requests are returned along with issues. Skip them.
