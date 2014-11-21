@@ -313,14 +313,18 @@ def update_project_info(project):
             project['description'] = project['description'].decode('utf-8')
 
             # unless one of the fields has been updated
-            if project['description'] != existing_project.description:
-                project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
-            if project['categories'] != existing_project.categories:
-                project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
-            if project['type'] != existing_project.type:
-                project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
-            if project['link_url'] != existing_project.link_url:
-                project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
+            if 'description' in project:
+                if project['description'] != existing_project.description:
+                    project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
+            if 'categories' in project:
+                if project['categories'] != existing_project.categories:
+                    project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
+            if 'type' in project:
+                if project['type'] != existing_project.type:
+                    project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
+            if 'link_url' in project:
+                if project['link_url'] != existing_project.link_url:
+                    project['last_updated'] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z")
 
         else:
             # Set a date when we first see a non-github project
