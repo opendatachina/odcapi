@@ -154,12 +154,10 @@ South Bend Voices, "A redeploy of CityVoice for South Bend, IN.", http://www.sou
 That projects list URL can be any flavor of csv. The easiest way is to make a Google Spreadsheet like [my example](https://docs.google.com/spreadsheet/ccc?key=0ArHmv-6U1drqdDBzNXpSZkVzRDJUQnpOS0RJM0FDWGc&usp=sharing) and then select **File > Publish it to the web**. 
 
 If you are using the new Google Spreadsheets, add `/export?format=csv` to the end. 
-
 `https://docs.google.com/spreadsheets/d/<key>/export?format=csv`
 
 If you have the older Google Drive version change `?output=html` to `?output=csv`.
-
-`https://docs.google.com/spreadsheet/pub?key=<key>&output=csv`
+`https://docs.google.com/spreadsheet/pub?key=<key>?output=csv`
 
 Put that in the Brigade Information sheet and you're done.
 
