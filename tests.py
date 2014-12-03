@@ -951,5 +951,20 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response['total'], 1)
         self.assertEqual(response['objects'][0]['title'], "Sad issue")
 
+    def test_org_dont_show_issues(self):
+        ''' Test that calls to /organizations dont return project issues '''
+        from factories import OrganizationFactory, ProjectFactory, IssueFactory
+        OrganizationFactory()
+        ProjectFactory()
+        IssueFactory()
+        db.session.commit()
+
+        response = self.app.get('/api/organizations')
+        response = json.loads(response.data)
+        for org in response['objects']:
+            if org['current_projects']:
+                self.assertFalse('issues' in org['current_projects'][0])
+                break
+
 if __name__ == '__main__':
     unittest.main()
