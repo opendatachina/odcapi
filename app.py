@@ -131,7 +131,7 @@ class Organization(db.Model):
             Return the three most current projects
         '''
         current_projects = Project.query.filter_by(organization_name=self.name).order_by(desc(Project.last_updated)).limit(3)
-        current_projects_json = [project.asdict() for project in current_projects]
+        current_projects_json = [project.asdict(include_issues=False) for project in current_projects]
 
         return current_projects_json
 
@@ -301,7 +301,7 @@ class Project(db.Model):
         '''
         return '%s://%s/api/projects/%s' % (request.scheme, request.host, str(self.id))
 
-    def asdict(self, include_organization=False):
+    def asdict(self, include_organization=False, include_issues=True):
         ''' Return Project as a dictionary, with some properties tweaked.
 
             Optionally include linked organization.
@@ -314,7 +314,8 @@ class Project(db.Model):
         if include_organization:
             project_dict['organization'] = self.organization.asdict()
 
-        project_dict['issues'] = [o.asdict() for o in db.session.query(Issue).filter(Issue.project_id == project_dict['id']).all()]
+        if include_issues:
+            project_dict['issues'] = [o.asdict() for o in db.session.query(Issue).filter(Issue.project_id == project_dict['id']).all()]
 
         return project_dict
 
