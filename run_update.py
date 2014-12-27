@@ -491,12 +491,11 @@ def get_issues(org_name):
                     if "/pull/" in issue['html_url']:
                         continue
                     issue_dict = dict(title=issue['title'], html_url=issue['html_url'],
-                                      body=issue['body'], project_id=project.id)
+                                      body=issue['body'], project_id=project.id, labels=issue['labels'])
                     issues.append(issue_dict)
-                    labels.append(issue['labels'])
                 else:
                     logging.error('Issue for project %s is not a dictionary', project.name)
-    return issues, labels
+    return issues
 
 def count_people_totals(all_projects):
     ''' Create a list of people details based on project details.
@@ -600,42 +599,46 @@ def save_project_info(session, proj_dict):
 
     return existing_project
 
-def save_issue_info(session, issue_dict, label_list):
+def save_issue(session, issue):
     '''
-        Save a dictionary of issue ingo to the datastore session.
+        Save a dictionary of issue info to the datastore session.
         Return an app.Issue instance
     '''
-
-    # Turn label lists into actual Label models
-    labels = []
-    for label_dict in label_list:
-        new_label = Label(**label_dict)
-        labels.append(new_label)
-        session.add(new_label)
-
     # Select the current issue, filtering on title AND project_name.
-    filter = Issue.title == issue_dict['title'], Issue.project_id == issue_dict['project_id']
+    filter = Issue.title == issue['title'], Issue.project_id == issue['project_id']
     existing_issue = session.query(Issue).filter(*filter).first()
 
-    # If this is a new issue, save and return it.
+    # If this is a new issue save it
     if not existing_issue:
-        new_issue = Issue(**issue_dict)
-        new_issue.labels = labels
+        new_issue = Issue(**issue)
         session.add(new_issue)
-        return new_issue
+        session.commit()
+    
+    else:
+        # Mark the existing issue for safekeeping.
+        existing_issue.keep = True
+        # Update existing issue details
+        existing_issue.title = issue['title']
+        existing_issue.body = issue['body']
+        existing_issue.html_url = issue['html_url']
+        existing_issue.project_id = issue['project_id']
+        session.commit()
 
-    # Mark the existing issue for safekeeping.
-    existing_issue.keep = True
+def save_labels(session, issue):
+    '''
+        Save labels to issues
+    '''
+    # Get issue from db, to get id
+    filter = Issue.title == issue['title'], Issue.project_id == issue['project_id']
+    existing_issue = session.query(Issue).filter(*filter).first()
 
-    # Update existing issue details
-    for (field, value) in issue_dict.items():
-        setattr(existing_issue, field, value)
-    existing_issue.labels = labels
+    # add the issue id to the labels
+    for label in issue['labels']:
+        label["issue_id"] = existing_issue.id
+        new_label = Label(**label)
+        session.add(new_label)
+        session.commit()
 
-    # Flush existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
-    session.flush()
-
-    return existing_issue
 
 def save_event_info(session, event_dict):
     '''
@@ -777,9 +780,10 @@ def main(org_name=None, org_sources=None):
 
         # Get issues for all of the projects
         logging.info("Gathering all of %s's open GitHub issues." % organization.name)
-        issues, labels = get_issues(organization.name)
-        for i in range(0,len(issues)):
-            save_issue_info(db.session, issues[i], labels[i])
+        issues = get_issues(organization.name)
+        for issue in issues:
+            save_issue(db.session, issue)
+            save_labels(db.session, issue)
 
         # Remove everything marked for deletion.
         db.session.query(Event).filter(not Event.keep).delete()
