@@ -616,7 +616,7 @@ class ApiTest(unittest.TestCase):
         project = ProjectFactory(organization_name=organization.name)
         db.session.add(project)
         db.session.commit()
-        issue = IssueFactory(project_id=project.id)
+        issue = IssueFactory(project_id=project.id,title="TEST ISSUE",body="TEST ISSUE BODY")
         db.session.add(issue)
         db.session.commit()
 
@@ -625,8 +625,8 @@ class ApiTest(unittest.TestCase):
         response = json.loads(response.data)
 
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], 'Civic Issue 2')
-        self.assertEqual(response['objects'][0]['body'], 'Civic Issue blah blah blah 2')
+        self.assertEqual(response['objects'][0]['title'], 'TEST ISSUE')
+        self.assertEqual(response['objects'][0]['body'], 'TEST ISSUE BODY')
 
         # Check for linked issues in linked project
         self.assertTrue('project' in response['objects'][0])
@@ -965,6 +965,40 @@ class ApiTest(unittest.TestCase):
             if org['current_projects']:
                 self.assertFalse('issues' in org['current_projects'][0])
                 break
+
+    def test_issue_cascading_deletes(self):
+        ''' Test that labels get deleted when their parent
+            issue, project, and org is deleted
+        '''
+        organization = OrganizationFactory(name="TEST ORG")
+        project = ProjectFactory(organization_name="TEST ORG", name="TEST PROJECT")
+        issue = IssueFactory(title="TEST ISSUE", project_id=1)
+        label = LabelFactory(issue_id=1)
+        db.session.commit()
+
+        db.session.execute("DELETE FROM issue")
+        db.session.commit()
+        labels = db.session.query(Label).all()
+        self.assertFalse(len(labels))
+
+        issue = IssueFactory(title="TEST ISSUE", project_id=1)
+        label = LabelFactory(issue_id=2)
+        db.session.commit()
+        db.session.execute("DELETE FROM project")
+        db.session.commit()
+        labels = db.session.query(Label).all()
+        self.assertFalse(len(labels))
+
+        project = ProjectFactory(organization_name="TEST ORG", name="TEST PROJECT")
+        issue = IssueFactory(title="TEST ISSUE", project_id=2)
+        label = LabelFactory(issue_id=3)
+        db.session.commit()
+
+        db.session.execute("DELETE FROM organization")
+        db.session.commit()
+        labels = db.session.query(Label).all()
+        self.assertFalse(len(labels))
+
 
 if __name__ == '__main__':
     unittest.main()
