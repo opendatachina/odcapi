@@ -116,10 +116,10 @@ class RunUpdateTestCase(unittest.TestCase):
                 for proj_info in projects:
                     run_update.save_project_info(self.db.session, proj_info)
 
-                issues, labels = run_update.get_issues(organization.name)
+                issues = run_update.get_issues(organization.name)
 
-                for i in range(0, len(issues)):
-                    run_update.save_issue_info(self.db.session, issues[i], labels[i])
+                for issue in issues:
+                    run_update.save_issue(self.db.session, issue)
 
         self.db.session.flush()
 
@@ -542,7 +542,7 @@ class RunUpdateTestCase(unittest.TestCase):
 
         with HTTMock(response_content):
             import run_update
-            issues, labels = run_update.get_issues(organization.name)
+            issues = run_update.get_issues(organization.name)
             assert (len(issues) == 2)
 
     def test_project_list_without_all_columns(self):
