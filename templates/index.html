@@ -1,11 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<title>Civic Tech Movement API</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link href="/api/static/normalize.css" rel="stylesheet" type="text/css">
-	<link href="/api/static/grid.css" rel="stylesheet" type="text/css">
+    <meta charset="utf-8" />
+    <link href="//style.codeforamerica.org/2/style/css/prism.css" rel="stylesheet" />
+    <link href="//style.codeforamerica.org/2/style/css/main.css" rel="stylesheet">
+    <link href="//style.codeforamerica.org/2/style/css/documentation.css" rel="stylesheet">
+    <link href="//style.codeforamerica.org/2/style/css/layout.css" media="all and (min-width: 40em)" rel="stylesheet">
+    <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if (lt IE 9)&(!IEMobile)]>
+    <link rel="stylesheet" href="//style.codeforamerica.org/2/style/css/layout.css" media="all">
+    <![endif]-->
+
+    <title>Civic Tech Movement API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--
+    <link href="/api/static/normalize.css" rel="stylesheet" type="text/css">
+    <link href="/api/static/grid.css" rel="stylesheet" type="text/css">
     <style type="text/css">
 
         dt
@@ -20,6 +32,7 @@
         dd { margin-left: 1.5em; margin-bottom: .5em }
 
     </style>
+    -->
 </head>
 <body class="container">
     <p>Read more about me at <a href="https://github.com/codeforamerica/cfapi#readme">codeforamerica/cfapi</a>.</p>
@@ -36,12 +49,12 @@
         <li><a href="#per_page">per_page</a></li>
     </ul>
 
-    <h3>
-        Organizations
-        <a id="api-organizations" href="#api-organizations">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            Organizations
+            <a id="api-organizations" href="#api-organizations">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a list of organizations, also called brigades.
             </p>
@@ -64,11 +77,11 @@
                 <dd>List of <a href="#organization-properties">individual organizations</a>.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/organizations">{{ api_base }}/api/organizations</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -86,11 +99,11 @@
    },
    …
   ]
-}</pre>
+}</code></pre>
             <h4>Sample Request with query params</h4>
             <p><code><a href="{{ api_base }}/api/organizations?type=Brigade">{{ api_base }}/api/organizations?type=Brigade</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -108,16 +121,16 @@
    },
    …
   ]
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        Organizations GeoJSON
-        <a id="api-organizations-geojson" href="#api-organizations-geojson">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            Organizations GeoJSON
+            <a id="api-organizations-geojson" href="#api-organizations-geojson">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a list of organizations, in
                 <a href="http://geojson.org">GeoJSON format</a>
@@ -148,11 +161,11 @@
                 </dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/organizations.geojson">{{ api_base }}/api/organizations.geojson</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "type": "FeatureCollection",
   "features": [
     {
@@ -171,16 +184,16 @@
     },
     …
   ]
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        One Organization
-        <a id="api-one-organization" href="#api-one-organization">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            One Organization
+            <a id="api-one-organization" href="#api-one-organization">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a single organization.
             </p>
@@ -230,11 +243,11 @@
                 <dd>URL source for stories list.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/organizations/Open_Oakland">{{ api_base }}/api/organizations/Open_Oakland</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "type": "Brigade",
   "name": "Open Oakland",
   "website": "http://openoakland.org/",
@@ -255,16 +268,16 @@
   "current_stories": [ … ],
   "all_stories": "{{ api_base }}/api/organizations/Open_Oakland/stories",
   "rss": ""
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        Projects
-        <a id="api-projects" href="#api-projects">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            Projects
+            <a id="api-projects" href="#api-projects">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a list of projects. Projects are ordered by most recent update.
             </p>
@@ -288,11 +301,11 @@
                 <dd>List of <a href="#project-properties">individual projects</a>.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/projects">{{ api_base }}/api/projects</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -319,11 +332,11 @@
   },
    …
   ]
-}</pre>
+}</code></pre>
             <h4>Sample Request with query params</h4>
             <p><code><a href="{{ api_base }}/api/projects?categories=Knowledge&organization_type=Brigade">{{ api_base }}/api/projects?categories=Knowledge&organization_type=Brigade</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -353,16 +366,16 @@
   },
    …
   ]
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        One Project
-        <a id="api-one-project" href="#api-one-project">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            One Project
+            <a id="api-one-project" href="#api-one-project">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a single project.
             </p>
@@ -402,11 +415,11 @@
                 <dd>A list of project <a href="#api-issues">issues</a>.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/projects/1">{{ api_base }}/api/projects/1</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "id": 1,
   "name": "cityvoice",
   "link_url": "http://www.cityvoiceapp.com/",
@@ -456,16 +469,16 @@
     },
     { … }
   ]
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        Events
-        <a id="api-events" href="#api-events">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            Events
+            <a id="api-events" href="#api-events">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a list of events.
             </p>
@@ -493,11 +506,11 @@
             <dt>past_events</dt>
             <dd>Only returns events that have already happened.</dd>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/events">{{ api_base }}/api/events</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -523,16 +536,16 @@
   },
    …
   ]
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        One Event
-        <a id="api-one-event" href="#api-one-event">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            One Event
+            <a id="api-one-event" href="#api-one-event">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a single event.
             </p>
@@ -568,11 +581,11 @@
                 <dd>Name of organization.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/events/1">{{ api_base }}/api/events/1</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "id": 1,
   "name": "OpenOakland Civic Hack Night",
   "description": "&lt;p&gt;Join us for our weekly civic hack sessions inside City Hall.&lt;/p&gt;",
@@ -584,16 +597,16 @@
   "organization": { … },
   "organization_name": "Open Oakland",
   "created_at": "2013-06-04 20:31:29"
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        Stories
-        <a id="api-stories" href="#api-stories">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            Stories
+            <a id="api-stories" href="#api-stories">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a list of stories.
             </p>
@@ -610,11 +623,11 @@
                 <dd>List of <a href="#story-properties">individual stories</a>.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/stories">{{ api_base }}/api/stories</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -635,16 +648,16 @@
   },
    …
   ]
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        One Story
-        <a id="api-one-story" href="#api-one-story">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            One Story
+            <a id="api-one-story" href="#api-one-story">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a single story.
             </p>
@@ -669,27 +682,27 @@
                 <dd>Name of organization.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/stories/1">{{ api_base }}/api/stories/1</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "id": 1,
   "title": "Here Are Our Values",
   "link": "http://www.codeforamerica.org/blog/2014/03/27/here-are-our-values/",
   "organization": { … },
   "organization_name": "Code for San Francisco",
   "type": "blog"
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <h3>
-        Issues
-        <a id="api-issues" href="#api-issues">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            Issues
+            <a id="api-issues" href="#api-issues">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a list of project issues.
             </p>
@@ -718,11 +731,11 @@
 						<dt>Any organization attribute</dt>
 						<dd>name, website, city, etc ...</dd>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/issues">{{ api_base }}/api/issues</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -751,11 +764,11 @@
   },
   …
   ]
-}</pre>
+}</code></pre>
             <h4>Sample Request with labels filter</h4>
             <p><code><a href="{{ api_base }}/api/issues/labels/enhancement">{{ api_base }}/api/issues/labels/enhancement</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "pages": {
     "next": …,
     "last": …
@@ -796,13 +809,12 @@
   },
   …
   ]
-}</pre>
+}</code></pre>
 
 <h4>Sample Request with Parameters</h4>
 <p><code><a href="{{ api_base }}/api/issues?organization_type=Code for All">{{ api_base }}/api/issues?organization_type=Code for All</a></code></p>
 <h4>Sample Response</h4>
-<pre>
-  [
+<pre><code>[
     {
       api_url: "http://localhost:5000/api/issues/27",
       body: "",
@@ -813,18 +825,18 @@
       title: "create admin UI on profile page for promoting other users' account level"
     }
     , ...
-  ]</pre>
+  ]</code></pre>
 
 
         </div>
     </div>
 
-    <h3>
-        One Issue
-        <a id="api-one-issue" href="#api-one-issue">¶</a>
-    </h3>
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <h3>
+            One Issue
+            <a id="api-one-issue" href="#api-one-issue">¶</a>
+        </h3>
+        <div class="layout-minim">
             <p>
                 Retrieve a single issue.
             </p>
@@ -855,11 +867,11 @@
                 <dd>Dictionary of <a href="#project-properties">project details</a>.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/issues/1">{{ api_base }}/api/issues/1</a></code></p>
             <h4>Sample Response</h4>
-            <pre>{
+            <pre><code>{
   "id": 1,
   "title": "Write some tests",
   "api_url": "http://codeforamerica.org/api/issues/2",
@@ -874,12 +886,12 @@
   ],
   "project": { … },
   "project_name": "ballot_initiatives",
-}</pre>
+}</code></pre>
         </div>
     </div>
 
-    <div class="clearfix">
-        <div class="half column">
+    <div class="layout-breve">
+        <div class="layout-minim">
             <h3>
                 Parameters
             </h3>
@@ -891,11 +903,11 @@
                 <dd>The number of features to return on each page.</dd>
             </dl>
         </div>
-        <div class="half column">
+        <div class="layout-minim">
             <h4>Sample Request</h4>
             <p><code><a href="{{ api_base }}/api/organizations?per_page=1">{{ api_base }}/api/organizations?per_page=1</a></code></p>
             <p>Notice 12 pages each returning one feature each.</p>
-            <pre>{
+            <pre><code>{
   "objects": [
      ...
   ],
@@ -904,7 +916,7 @@
     "next": "http://localhost:5000/api/organizations?page=2"
   },
   "total": 12
-}</pre>
+}</code></pre>
         </div>
     </div>
 
