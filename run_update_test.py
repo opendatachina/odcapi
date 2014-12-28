@@ -569,5 +569,18 @@ class RunUpdateTestCase(unittest.TestCase):
             projects = run_update.get_projects(organization)
             assert len(projects) == 2
 
+    def test_missing_last_updated(self):
+        ''' In rare cases, a project will be in the db without a last_updated date
+            Remove a project's last_updated and try and update it.
+        '''
+        from app import Project
+        import run_update
+
+        with HTTMock(self.response_content):
+            run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
+            self.db.session.query(Project).update({"last_updated":None})
+            run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
+
+
 if __name__ == '__main__':
     unittest.main()
