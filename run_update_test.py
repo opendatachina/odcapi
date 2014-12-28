@@ -9,6 +9,8 @@ from re import match
 root_logger = logging.getLogger()
 root_logger.disabled = True
 
+import run_update
+
 class FakeResponse:
     def __init__(self, text):
         self.text = text
@@ -25,7 +27,7 @@ class RunUpdateTestCase(unittest.TestCase):
         self.db = db
         self.db.create_all()
 
-        import run_update
+        
         run_update.github_throttling = False
 
     def tearDown(self):
@@ -43,7 +45,6 @@ class RunUpdateTestCase(unittest.TestCase):
         return urllib2.urlopen
 
     def response_content(self, url, request):
-        import run_update
 
         if url.geturl() == 'http://example.com/cfa-projects.csv':
             return response(200, '''name,description,link_url,code_url,type,categories\n,"Thing for ""stuff"".",,https://github.com/codeforamerica/cityvoice,web service,"community engagement, housing"\nSouthBendVoices,,,https://github.com/codeforamerica/cityvoice,,''')
@@ -91,8 +92,21 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' Add one sample organization with two projects and issues, verify that it comes back.
         '''
         with HTTMock(self.response_content):
-            import run_update
             run_update.main(org_sources="test_org_sources.csv")
+
+            # Iterate over organizations, projects and issues, saving them to db.session.
+            for org_info in run_update.get_organizations("test_org_sources.csv"):
+                organization = run_update.save_organization_info(self.db.session, org_info)
+
+                projects = run_update.get_projects(organization)
+
+                for proj_info in projects:
+                    run_update.save_project_info(self.db.session, proj_info)
+
+                issues, labels = run_update.get_issues(organization.name)
+
+                for i in range(0, len(issues)):
+                    run_update.save_issue_info(self.db.session, issues[i], labels[i])
 
         self.db.session.flush()
 
@@ -138,7 +152,7 @@ class RunUpdateTestCase(unittest.TestCase):
         self.mock_rss_response()
 
         with HTTMock(self.response_content):
-            import run_update
+
             run_update.main(org_sources="test_org_sources.csv")
 
         self.db.session.flush()
@@ -210,7 +224,6 @@ class RunUpdateTestCase(unittest.TestCase):
             an error message should be logged.
         '''
         def response_content(url, request):
-            import run_update
 
             if url.geturl() == 'http://example.com/cfa-projects.csv':
                 return response(200, '''name,description,link_url,code_url,type,categories\n,,http://google.com,https://github.com/codeforamerica/cityvoice,,''')
@@ -230,7 +243,7 @@ class RunUpdateTestCase(unittest.TestCase):
         logging.error = Mock()
 
         with HTTMock(response_content):
-            import run_update
+
             run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('https://api.github.com/repos/codeforamerica/cityvoice doesn\'t exist.')
@@ -239,7 +252,6 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' When github returns a non-404 error code, an IOError should be raised.
         '''
         def response_content(url, request):
-            import run_update
 
             if url.geturl() == 'http://example.com/cfa-projects.csv':
                 return response(200, '''name,description,link_url,code_url,type,categories\n,,,https://github.com/codeforamerica/cityvoice,,''')
@@ -251,7 +263,7 @@ class RunUpdateTestCase(unittest.TestCase):
                 return response(422, '''Unprocessable Entity''')
 
         with HTTMock(response_content):
-            import run_update
+
             self.assertFalse(run_update.github_throttling)
             with self.assertRaises(IOError):
                 run_update.main(org_sources="test_org_sources.csv")
@@ -260,7 +272,6 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' When an organization has a weird name, ...
         '''
         def response_content(url, request):
-            import run_update
 
             if "docs.google.com" in url:
                 return response(200, '''name\nCode_for-America''')
@@ -272,7 +283,7 @@ class RunUpdateTestCase(unittest.TestCase):
         self.mock_rss_response()
 
         with HTTMock(response_content):
-            import run_update
+
             run_update.main(org_sources="test_org_sources.csv")
             from app import Error
             errors = self.db.session.query(Error).all()
@@ -295,7 +306,7 @@ class RunUpdateTestCase(unittest.TestCase):
           return response(200, '''name\nCode#America\nCode?America\nCode/America\nCode for America''')
 
       with HTTMock(response_content):
-          import run_update
+
           run_update.main(org_sources="test_org_sources.csv")
           from app import Error
           errors = self.db.session.query(Error).all()
@@ -312,7 +323,6 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' When an organization has a badly formed events url is passed, no events are saved
         '''
         def response_content(url, request):
-            import run_update
 
             if "docs.google.com" in url:
                 return response(200, '''name,events_url\nCode for America,http://www.meetup.com/events/foo-%%%''')
@@ -323,7 +333,6 @@ class RunUpdateTestCase(unittest.TestCase):
         logging.error = Mock()
 
         with HTTMock(response_content):
-            import run_update
             run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('Code for America does not have a valid events url')
@@ -339,7 +348,6 @@ class RunUpdateTestCase(unittest.TestCase):
             message should be logged
         '''
         def response_content(url, request):
-            import run_update
 
             if "docs.google.com" in url:
                 return response(200, '''name,events_url\nCode for America,http://www.meetup.com/events/Code-For-Charlotte''')
@@ -354,7 +362,6 @@ class RunUpdateTestCase(unittest.TestCase):
         self.mock_rss_response()
 
         with HTTMock(response_content):
-            import run_update
             run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('Code for America\'s meetup page cannot be found')
@@ -369,9 +376,8 @@ class RunUpdateTestCase(unittest.TestCase):
         organization = OrganizationFactory(name='Code for America')
 
         with HTTMock(self.response_content):
-            import run_update as ru
-            for story_info in ru.get_stories(organization):
-                ru.save_story_info(self.db.session, story_info)
+            for story_info in run_update.get_stories(organization):
+                run_update.save_story_info(self.db.session, story_info)
 
         self.db.session.flush()
 
@@ -400,7 +406,6 @@ class RunUpdateTestCase(unittest.TestCase):
                 return response(403, "", {"x-ratelimit-remaining" : 0})
 
         with HTTMock(response_content):
-            import run_update
             run_update.main(org_sources="test_org_sources.csv")
 
         from app import Project
@@ -431,7 +436,6 @@ class RunUpdateTestCase(unittest.TestCase):
                 return response(200, '''name,description,link_url,code_url,type,categories\r\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",http://open-austin.github.io/hack-task-aggregator/public/index.html,,web service,"project management, civic hacking"''')
 
         with HTTMock(response_content):
-            import run_update
             projects = run_update.get_projects(philly)
             self.assertEqual(projects[0]['name'], "OpenPhillyGlobe")
             self.assertEqual(projects[0]['description'], 'Google Earth for Philadelphia" with open source and open transit data."')
@@ -455,7 +459,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
 
         with HTTMock(response_content):
-            import run_update
             projects = run_update.get_projects(whatever)
             self.assertEqual(projects[0]['name'], "OpenPhillyGlobe")
             self.assertEqual(projects[0]['last_updated'], datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z"))
@@ -467,7 +470,6 @@ class RunUpdateTestCase(unittest.TestCase):
     def test_org_sources_csv(self):
         '''Test that there is a csv file with links to lists of organizations
         '''
-        import run_update
         self.assertTrue(os.path.exists(run_update.ORG_SOURCES))
 
     def test_utf8_noncode_projects(self):
@@ -485,7 +487,6 @@ class RunUpdateTestCase(unittest.TestCase):
                 return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"Philly Map of Shame","PHL Map of Shame is a citizen-led project to map the impact of the School Reform Commission\xe2\x80\x99s \xe2\x80\x9cdoomsday budget\xe2\x80\x9d on students and parents. We will visualize complaints filed with the Pennsylvania Department of Education.","http://phillymapofshame.org","","","Education, CivicEngagement"''')
             
         with HTTMock(response_content):
-            import run_update
             projects = run_update.get_projects(philly)
 
             assert projects[0]['last_updated'] == None
@@ -509,8 +510,8 @@ class RunUpdateTestCase(unittest.TestCase):
 
 
         with HTTMock(response_content):
-            import run_update
             issues = run_update.get_issues(organization.name)
+
             assert (len(issues) == 2)
 
     def test_project_list_without_all_columns(self):
@@ -533,7 +534,6 @@ class RunUpdateTestCase(unittest.TestCase):
                 return response(200, '''"name","description","link_url","code_url"\n"TEST PROJECT2","TEST DESCRIPTION 2","http://testurl.org",""''')
 
         with HTTMock(response_content):
-            import run_update
             projects = run_update.get_projects(organization)
             assert len(projects) == 2
 
@@ -542,7 +542,6 @@ class RunUpdateTestCase(unittest.TestCase):
             Remove a project's last_updated and try and update it.
         '''
         from app import Project
-        import run_update
 
         with HTTMock(self.response_content):
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
@@ -554,8 +553,7 @@ class RunUpdateTestCase(unittest.TestCase):
             run_update twice and check for orphan labels.
         '''
         from app import Label
-        import run_update
-        
+
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
             run_update.main(org_sources="test_org_sources.csv")
