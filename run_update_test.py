@@ -97,21 +97,7 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         with HTTMock(self.response_content):
             import run_update
-
-
-            # Iterate over organizations, projects and issues, saving them to db.session.
-            for org_info in run_update.get_organizations("test_org_sources.csv"):
-                organization = run_update.save_organization_info(self.db.session, org_info)
-
-                projects = run_update.get_projects(organization)
-
-                for proj_info in projects:
-                    run_update.save_project_info(self.db.session, proj_info)
-
-                issues, labels = run_update.get_issues(organization.name)
-
-                for i in range(0, len(issues)):
-                    run_update.save_issue_info(self.db.session, issues[i], labels[i])
+            run_update.main(org_sources="test_org_sources.csv")
 
         self.db.session.flush()
 
@@ -283,7 +269,7 @@ class RunUpdateTestCase(unittest.TestCase):
             import run_update
 
             if "docs.google.com" in url:
-                return response(200, '''name,website,events_url,rss,projects_list_url\nCode_for-America,http://codeforamerica.org,http://www.meetup.com/events/foo-%%%,,http://example.com/cfa-projects.csv''')
+                return response(200, '''name\nCode_for-America''')
             else:
                 raise Exception('Asked for unknown URL ' + url.geturl())
 
@@ -313,7 +299,7 @@ class RunUpdateTestCase(unittest.TestCase):
       '''
 
       def response_content(url, request):
-          return response(200, '''name,website,events_url,rss,projects_list_url\nCode#America,http://codeforamerica.org,,,\nCode?America,http://codeforamerica.org,,,\nCode/America,http://codeforamerica.org,,,\nCode for America,http://codeforamerica.org,,,''')
+          return response(200, '''name\nCode#America\nCode?America\nCode/America\nCode for America''')
 
       with HTTMock(response_content):
           import run_update
@@ -336,7 +322,7 @@ class RunUpdateTestCase(unittest.TestCase):
             import run_update
 
             if "docs.google.com" in url:
-                return response(200, '''name,website,events_url,rss,projects_list_url\nCode for America,,http://www.meetup.com/events/foo-%%%,,''')
+                return response(200, '''name,events_url\nCode for America,http://www.meetup.com/events/foo-%%%''')
 
             else:
                 raise Exception('Asked for unknown URL ' + url.geturl())
@@ -364,9 +350,9 @@ class RunUpdateTestCase(unittest.TestCase):
             import run_update
 
             if "docs.google.com" in url:
-                return response(200, '''name,website,events_url,rss,projects_list_url\nCode for America,,http://www.meetup.com/events/Code-For-Charlotte,,''')
+                return response(200, '''name,events_url\nCode for America,http://www.meetup.com/events/Code-For-Charlotte''')
 
-            if match(r'https:\/\/api\.meetup\.com\/2\/events\?status=past,upcoming&format=json&group_urlname=Code-For-Charlotte&key=', url.geturl()):
+            if 'api.meetup.com' in url:
                 return response(404, '''Not Found!''')
 
             else:
