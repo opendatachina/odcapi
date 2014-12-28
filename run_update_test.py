@@ -10,6 +10,9 @@ from mock import Mock
 from time import time
 from re import match
 
+root_logger = logging.getLogger()
+root_logger.disabled = True
+
 class FakeResponse:
     def __init__(self, text):
         self.text = text
