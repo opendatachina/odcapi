@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-
-import os
-import unittest
-import tempfile
-import datetime
+import os, unittest, tempfile, datetime, urllib2, logging
 from httmock import response, HTTMock
 from mock import Mock
 from time import time
 from re import match
 
-import logging
 root_logger = logging.getLogger()
 root_logger.disabled = True
 
@@ -232,7 +227,6 @@ class RunUpdateTestCase(unittest.TestCase):
             else:
                 raise Exception('Asked for unknown URL ' + url.geturl())
 
-        import logging
         logging.error = Mock()
 
         with HTTMock(response_content):
@@ -273,7 +267,6 @@ class RunUpdateTestCase(unittest.TestCase):
             else:
                 raise Exception('Asked for unknown URL ' + url.geturl())
 
-        import logging
         logging.error = Mock()
 
         self.mock_rss_response()
@@ -327,7 +320,6 @@ class RunUpdateTestCase(unittest.TestCase):
             else:
                 raise Exception('Asked for unknown URL ' + url.geturl())
 
-        import logging
         logging.error = Mock()
 
         with HTTMock(response_content):
@@ -357,8 +349,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
             else:
                 raise Exception('Asked for unknown URL ' + url.geturl())
-
-        import logging
 
         logging.error = Mock()
         self.mock_rss_response()
