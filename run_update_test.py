@@ -11,6 +11,7 @@ root_logger.disabled = True
 
 import run_update
 from app import Organization, Project, Issue, Label, Story, Event, Error
+from factories import OrganizationFactory, ProjectFactory, EventFactory, IssueFactory, StoryFactory, LabelFactory
 
 class FakeResponse:
     def __init__(self, text):
@@ -138,8 +139,6 @@ class RunUpdateTestCase(unittest.TestCase):
             the new organization, its project, and events should be saved. The out of date
             organization, its project and event should be deleted.
         '''
-        from factories import OrganizationFactory, ProjectFactory, EventFactory, IssueFactory
-
         old_organization = OrganizationFactory(name='Old Organization')
         old_project = ProjectFactory(name='Old Project', organization_name='Old Organization')
         old_event = EventFactory(name='Old Event', organization_name='Old Organization')
@@ -358,8 +357,7 @@ class RunUpdateTestCase(unittest.TestCase):
         Test that two most recent blog posts are in the db.
         '''
         self.mock_rss_response()
-
-        from factories import OrganizationFactory
+        
         organization = OrganizationFactory(name='Code for America')
 
         with HTTMock(self.response_content):
@@ -407,7 +405,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         Testing weird csv dialects we've encountered
         '''
-        from factories import OrganizationFactory
         philly = OrganizationFactory(name='Code for Philly')
         gdocs = OrganizationFactory(projects_list_url="http://www.gdocs.com/projects.csv")
 
@@ -429,7 +426,6 @@ class RunUpdateTestCase(unittest.TestCase):
     def test_non_github_projects(self):
         ''' Test that non github and non code projects get last_updated timestamps.
         '''
-        from factories import OrganizationFactory
         whatever = OrganizationFactory(name='Whatever')
         gdocs = OrganizationFactory(projects_list_url="http://www.gdocs.com/projects.csv")
 
@@ -457,9 +453,6 @@ class RunUpdateTestCase(unittest.TestCase):
     def test_utf8_noncode_projects(self):
         ''' Test that utf8 project descriptions match exisiting projects.
         '''
-        from factories import OrganizationFactory, ProjectFactory
-
-
         philly = OrganizationFactory(name='Code for Philly', projects_list_url="http://codeforphilly.org/projects.csv")
         old_project = ProjectFactory(name='Philly Map of Shame', organization_name='Code for Philly', description=u'PHL Map of Shame is a citizen-led project to map the impact of the School Reform Commission\u2019s \u201cdoomsday budget\u201d on students and parents. We will visualize complaints filed with the Pennsylvania Department of Education.', categories='Education, CivicEngagement', type='', link_url='http://phillymapofshame.org')
         self.db.session.flush()
@@ -475,8 +468,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
     def test_issue_paging(self):
         ''' test that issues are following page links '''
-        from factories import OrganizationFactory, ProjectFactory
-
         organization = OrganizationFactory(name='Code for America', projects_list_url="http://codeforamerica.org/projects.csv")
         project = ProjectFactory(organization_name='Code for America',code_url='https://github.com/TESTORG/TESTPROJECT')
 
@@ -500,8 +491,6 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' Get a project list that doesn't have all the columns.
             Don't die.
         '''
-        from factories import OrganizationFactory, ProjectFactory
-
         organization = OrganizationFactory(name="TEST ORG", projects_list_url="http://www.gdocs.com/projects.csv")
         project = ProjectFactory(organization_name="TEST ORG", name="TEST PROJECT2", description="TEST DESCRIPTION 2", link_url="http://testurl.org")
         self.db.session.flush()
