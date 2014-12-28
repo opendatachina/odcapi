@@ -10,6 +10,7 @@ root_logger = logging.getLogger()
 root_logger.disabled = True
 
 import run_update
+from app import Organization, Project, Issue, Label, Story, Event, Error
 
 class FakeResponse:
     def __init__(self, text):
@@ -35,8 +36,6 @@ class RunUpdateTestCase(unittest.TestCase):
         self.db.drop_all()
 
     def mock_rss_response(self):
-        import urllib2
-
         rss_file=open('blog.xml')
         rss_content = rss_file.read()
         rss_file.close()
@@ -110,8 +109,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
         self.db.session.flush()
 
-        from app import Organization, Project, Issue
-
         # check for the one organization
         filter = Organization.name == u'Cöde for Ameriça'
         organization = self.db.session.query(Organization).filter(filter).first()
@@ -156,8 +153,6 @@ class RunUpdateTestCase(unittest.TestCase):
             run_update.main(org_sources="test_org_sources.csv")
 
         self.db.session.flush()
-
-        from app import Organization, Project, Event, Issue
 
         # make sure old org is no longer there
         filter = Organization.name == 'Old Organization'
@@ -285,14 +280,10 @@ class RunUpdateTestCase(unittest.TestCase):
         with HTTMock(response_content):
 
             run_update.main(org_sources="test_org_sources.csv")
-            from app import Error
             errors = self.db.session.query(Error).all()
             for error in errors:
                 self.assertTrue("ValueError" in error.error)
             self.assertEqual(self.db.session.query(Error).count(),1)
-
-
-        from app import Organization
 
         # Make sure no organizations exist
         orgs_count = self.db.session.query(Organization).count()
@@ -308,14 +299,12 @@ class RunUpdateTestCase(unittest.TestCase):
       with HTTMock(response_content):
 
           run_update.main(org_sources="test_org_sources.csv")
-          from app import Error
           errors = self.db.session.query(Error).all()
           for error in errors:
               self.assertTrue("ValueError" in error.error)
           self.assertEqual(self.db.session.query(Error).count(),3)
 
       # Make sure one good organization exists
-      from app import Organization
       orgs_count = self.db.session.query(Organization).count()
       self.assertEqual(orgs_count, 1)
 
@@ -336,8 +325,6 @@ class RunUpdateTestCase(unittest.TestCase):
             run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('Code for America does not have a valid events url')
-
-        from app import Event
 
         # Make sure no events exist
         events_count = self.db.session.query(Event).count()
@@ -381,8 +368,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
         self.db.session.flush()
 
-        from app import Story
-
         stories_count = self.db.session.query(Story).count()
         self.assertEqual(stories_count, 2)
 
@@ -408,16 +393,13 @@ class RunUpdateTestCase(unittest.TestCase):
         with HTTMock(response_content):
             run_update.main(org_sources="test_org_sources.csv")
 
-        from app import Project
         projects = self.db.session.query(Project).all()
         for project in projects:
             self.assertIsNone(project.github_details)
 
-        from app import Organization
         org_count = self.db.session.query(Organization).count()
         self.assertEqual(org_count, 1)
 
-        from app import Error
         error = self.db.session.query(Error).first()
         self.assertEqual(error.error, "IOError: We done got throttled by GitHub")
 
@@ -518,7 +500,6 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' Get a project list that doesn't have all the columns.
             Don't die.
         '''
-        from app import Project
         from factories import OrganizationFactory, ProjectFactory
 
         organization = OrganizationFactory(name="TEST ORG", projects_list_url="http://www.gdocs.com/projects.csv")
@@ -541,8 +522,6 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' In rare cases, a project will be in the db without a last_updated date
             Remove a project's last_updated and try and update it.
         '''
-        from app import Project
-
         with HTTMock(self.response_content):
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
             self.db.session.query(Project).update({"last_updated":None})
@@ -552,8 +531,6 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' We keep getting orphan labels,
             run_update twice and check for orphan labels.
         '''
-        from app import Label
-
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
             run_update.main(org_sources="test_org_sources.csv")
