@@ -378,7 +378,7 @@ class Label(db.Model):
     url = db.Column(db.Unicode())
 
     issue = db.relationship('Issue', single_parent=True, cascade='all, delete-orphan')
-    issue_id = db.Column(db.Integer, db.ForeignKey('issue.id', ondelete='CASCADE'))
+    issue_id = db.Column(db.Integer, db.ForeignKey('issue.id', ondelete='CASCADE'), nullable=False, index=True)
 
     def __init__(self, name, color, url, issue_id=None):
         self.name = name

@@ -62,7 +62,7 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, '''{ "all": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 23, 9, 4, 0, 77, 26, 7, 17, 53, 59, 37, 40, 0, 47, 59, 55, 118, 11, 8, 3, 3, 30, 0, 1, 1, 4, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1 ], "owner": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] }''')
 
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
-            return response(200, ''' [ {"url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210","labels_url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210/labels{/name}","comments_url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210/comments","events_url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210/events","html_url": "https://github.com/codeforamerica/cityvoice/issue/210","id": 38200470,"number": 210,"title": "Important cityvoice issue","user": {"login": "daguar","id": 994938,"avatar_url": "https://avatars.githubusercontent.com/u/994938?","gravatar_id": "bdd8cc46ae86e389388ae78dfc45effe","url": "https://api.github.com/users/daguar","html_url": "https://github.com/daguar","followers_url": "https://api.github.com/users/daguar/followers","following_url": "https://api.github.com/users/daguar/following{/other_user}","gists_url": "https://api.github.com/users/daguar/gists{/gist_id}","starred_url": "https://api.github.com/users/daguar/starred{/owner}{/repo}","subscriptions_url": "https://api.github.com/users/daguar/subscriptions","organizations_url": "https://api.github.com/users/daguar/orgs","repos_url": "https://api.github.com/users/daguar/repos","events_url": "https://api.github.com/users/daguar/events{/privacy}","received_events_url": "https://api.github.com/users/daguar/received_events","type": "User","site_admin": false},"labels": [ ],"state": "open","assignee": null,"milestone": null,"comments": 0,"created_at": "2014-07-18T18:27:50Z","updated_at": "2014-07-18T18:27:50Z","closed_at": null,"pull_request": {"url": "https://api.github.com/repos/codeforamerica/cityvoice/pulls/210","html_url": "https://github.com/codeforamerica/cityvoice/pull/210","diff_url": "https://github.com/codeforamerica/cityvoice/pull/210.diff","patch_url": "https://github.com/codeforamerica/cityvoice/pull/210.patch"},"body": ""} ] ''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
+            return response(200, ''' [ {"url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210","labels_url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210/labels{/name}","comments_url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210/comments","events_url": "https://api.github.com/repos/codeforamerica/cityvoice/issues/210/events","html_url": "https://github.com/codeforamerica/cityvoice/issue/210","id": 38200470,"number": 210,"title": "Important cityvoice issue","user": {"login": "daguar","id": 994938,"avatar_url": "https://avatars.githubusercontent.com/u/994938?","gravatar_id": "bdd8cc46ae86e389388ae78dfc45effe","url": "https://api.github.com/users/daguar","html_url": "https://github.com/daguar","followers_url": "https://api.github.com/users/daguar/followers","following_url": "https://api.github.com/users/daguar/following{/other_user}","gists_url": "https://api.github.com/users/daguar/gists{/gist_id}","starred_url": "https://api.github.com/users/daguar/starred{/owner}{/repo}","subscriptions_url": "https://api.github.com/users/daguar/subscriptions","organizations_url": "https://api.github.com/users/daguar/orgs","repos_url": "https://api.github.com/users/daguar/repos","events_url": "https://api.github.com/users/daguar/events{/privacy}","received_events_url": "https://api.github.com/users/daguar/received_events","type": "User","site_admin": false},"labels": [ {"url": "","name": "enhancement","color": "84b6eb"}],"state": "open","assignee": null,"milestone": null,"comments": 0,"created_at": "2014-07-18T18:27:50Z","updated_at": "2014-07-18T18:27:50Z","closed_at": null,"pull_request": {"url": "https://api.github.com/repos/codeforamerica/cityvoice/pulls/210","html_url": "https://github.com/codeforamerica/cityvoice/pull/210","diff_url": "https://github.com/codeforamerica/cityvoice/pull/210.diff","patch_url": "https://github.com/codeforamerica/cityvoice/pull/210.patch"},"body": ""} ] ''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
 
         elif url.geturl() == 'https://api.github.com/users/daguar':
             return response(200, '''{ "login": "daguar", "id": 994938, "avatar_url": "https://gravatar.com/avatar/bdd8cc46ae86e389388ae78dfc45effe?d=https%3A%2F%2Fidenticons.github.com%2F4b102bf6681e25c44a3c980791826c1f.png&r=x", "gravatar_id": "bdd8cc46ae86e389388ae78dfc45effe", "url": "https://api.github.com/users/daguar", "html_url": "https://github.com/daguar", "followers_url": "https://api.github.com/users/daguar/followers", "following_url": "https://api.github.com/users/daguar/following{/other_user}", "gists_url": "https://api.github.com/users/daguar/gists{/gist_id}", "starred_url": "https://api.github.com/users/daguar/starred{/owner}{/repo}", "subscriptions_url": "https://api.github.com/users/daguar/subscriptions", "organizations_url": "https://api.github.com/users/daguar/orgs", "repos_url": "https://api.github.com/users/daguar/repos", "events_url": "https://api.github.com/users/daguar/events{/privacy}", "received_events_url": "https://api.github.com/users/daguar/received_events", "type": "User", "site_admin": false, "name": "Dave Guarino", "company": "", "blog": null, "location": "Oakland, CA", "email": "dave@codeforamerica.org", "hireable": true, "bio": null, "public_repos": 66, "public_gists": 10, "followers": 30, "following": 14, "created_at": "2011-08-21T21:12:10Z", "updated_at": "2014-03-07T18:17:21Z" }''')
@@ -116,10 +116,10 @@ class RunUpdateTestCase(unittest.TestCase):
                 for proj_info in projects:
                     run_update.save_project_info(self.db.session, proj_info)
 
-                issues, labels = run_update.get_issues(organization.name)
+                issues = run_update.get_issues(organization.name)
 
-                for i in range(0, len(issues)):
-                    run_update.save_issue_info(self.db.session, issues[i], labels[i])
+                for issue in issues:
+                    run_update.save_issue(self.db.session, issue)
 
         self.db.session.flush()
 
@@ -542,7 +542,7 @@ class RunUpdateTestCase(unittest.TestCase):
 
         with HTTMock(response_content):
             import run_update
-            issues, labels = run_update.get_issues(organization.name)
+            issues = run_update.get_issues(organization.name)
             assert (len(issues) == 2)
 
     def test_project_list_without_all_columns(self):
@@ -581,6 +581,20 @@ class RunUpdateTestCase(unittest.TestCase):
             self.db.session.query(Project).update({"last_updated":None})
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
 
+    def test_orphan_labels(self):
+        ''' We keep getting orphan labels,
+            run_update twice and check for orphan labels.
+        '''
+        from app import Label
+        import run_update
+        
+        with HTTMock(self.response_content):
+            run_update.main(org_sources="test_org_sources.csv")
+            run_update.main(org_sources="test_org_sources.csv")
+
+        labels = self.db.session.query(Label).all()
+        for label in labels:
+            self.assertIsNotNone(label.issue_id)
 
 if __name__ == '__main__':
     unittest.main()
