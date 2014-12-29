@@ -10,6 +10,7 @@ from mock import Mock
 from time import time
 from re import match
 
+import logging
 root_logger = logging.getLogger()
 root_logger.disabled = True
 
