@@ -1012,10 +1012,6 @@ def index():
 def api_index():
     return render_template('index.html', api_base='%s://%s' % (request.scheme, request.host))
 
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
 @app.route("/api/static/<path:path>")
 def api_static_file(path):
     local_path = join('static', path)
