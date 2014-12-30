@@ -576,7 +576,11 @@ def get_organizations(name=None):
         # Get one named organization.
         filter = Organization.name == raw_name(name)
         org = db.session.query(Organization).filter(filter).first()
-        return jsonify(org.asdict(True))
+        if org:
+            return jsonify(org.asdict(True))
+        else:
+            # If no org found
+            return jsonify({"status":"Resource Not Found"}), 404
 
     # Get a bunch of organizations.
     query = db.session.query(Organization)
@@ -733,7 +737,11 @@ def get_projects(id=None):
         # Get one named project.
         filter = Project.id == id
         proj = db.session.query(Project).filter(filter).first()
-        return jsonify(proj.asdict(True))
+        if proj:
+            return jsonify(proj.asdict(True))
+        else:
+            # If no project found
+            return jsonify({"status":"Resource Not Found"}), 404
 
     # Get a bunch of projects.
     query = db.session.query(Project)
@@ -762,7 +770,11 @@ def get_issues(id=None):
         # Get one issue
         filter = Issue.id == id
         issue = db.session.query(Issue).filter(filter).first()
-        return jsonify(issue.asdict(True))
+        if issue:
+            return jsonify(issue.asdict(True))
+        else:
+            # If no issue found
+            return jsonify({"status":"Resource Not Found"}), 404
 
     # Get a bunch of issues
     query = db.session.query(Issue).order_by(func.random())
@@ -831,7 +843,11 @@ def get_events(id=None):
         # Get one named event.
         filter = Event.id == id
         event = db.session.query(Event).filter(filter).first()
-        return jsonify(event.asdict(True))
+        if event:
+            return jsonify(event.asdict(True))
+        else:
+            # If no event found
+            return jsonify({"status":"Resource Not Found"}), 404
 
     # Get a bunch of events.
     query = db.session.query(Event)
@@ -900,7 +916,11 @@ def get_stories(id=None):
         # Get one named story.
         filter = Story.id == id
         story = db.session.query(Story).filter(filter).first()
-        return jsonify(story.asdict(True))
+        if story:
+            return jsonify(story.asdict(True))
+        else:
+            # If no story found
+            return jsonify({"status":"Resource Not Found"}), 404
 
     # Get a bunch of stories.
     query = db.session.query(Story).order_by(desc(Story.id))
@@ -991,6 +1011,10 @@ def index():
 @app.route("/api/")
 def api_index():
     return render_template('index.html', api_base='%s://%s' % (request.scheme, request.host))
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 @app.route("/api/static/<path:path>")
 def api_static_file(path):

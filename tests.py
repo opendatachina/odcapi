@@ -254,6 +254,20 @@ class ApiTest(unittest.TestCase):
         assert response.headers['Access-Control-Allow-Origin']  == '*'
         assert response.headers['Content-Type']  == 'application/json'
 
+    def test_404(self):
+        response = self.app.get('/blahblahblah')
+        assert response.status_code == 404
+        response = self.app.get('/api/blahblahblah')
+        assert response.status_code == 404
+        response = self.app.get('/api/organizations/123456789')
+        assert response.status_code == 404
+        response = self.app.get('/api/stories/123456789')
+        assert response.status_code == 404
+        response = self.app.get('/api/events/123456789')
+        assert response.status_code == 404
+        response = self.app.get('/api/issues/123456789')
+        assert response.status_code == 404
+
     def test_brigade_name_request(self):
         OrganizationFactory(name='Code for San Francisco')
         db.session.flush()
