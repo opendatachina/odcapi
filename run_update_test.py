@@ -61,7 +61,7 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, '''{ "all": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 23, 9, 4, 0, 77, 26, 7, 17, 53, 59, 37, 40, 0, 47, 59, 55, 118, 11, 8, 3, 3, 30, 0, 1, 1, 4, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1 ], "owner": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] }''')
 
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
-            return response(200, ''' [ {"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ ], "body" : "WHATEVER"} ] ''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
+            return response(200, ''' [ {"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ { "color" : "84b6eb", "name" : "enhancement", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/enhancement"} ], "body" : "WHATEVER"} ] ''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
 
         elif url.geturl() == 'https://api.github.com/users/daguar':
             return response(200, '''{ "login": "daguar", "avatar_url": "https://gravatar.com/avatar/whatever", "html_url": "https://github.com/daguar", "name": "Dave Guarino", "company": "", "blog": null, "location": "Oakland, CA", "email": "dave@codeforamerica.org",  }''')
@@ -563,6 +563,23 @@ class RunUpdateTestCase(unittest.TestCase):
         labels = self.db.session.query(Label).all()
         for label in labels:
             self.assertIsNotNone(label.issue_id)
+
+    def test_duplicate_labels(self):
+        ''' Getting many duplicate labels on issues.
+        '''
+        from app import Label
+        import run_update
+
+        with HTTMock(self.response_content):
+            run_update.main(org_sources="test_org_sources.csv")
+            run_update.main(org_sources="test_org_sources.csv")
+
+        labels = self.db.session.query(Label).all()
+        unique_labels = []
+
+        for label in labels:
+            assert (label.issue_id, label.name) not in unique_labels
+            unique_labels.append((label.issue_id, label.name))
 
 if __name__ == '__main__':
     unittest.main()

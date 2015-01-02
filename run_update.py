@@ -636,12 +636,21 @@ def save_labels(session, issue):
     filter = Issue.title == issue['title'], Issue.project_id == issue['project_id']
     existing_issue = session.query(Issue).filter(*filter).first()
 
-    # add the issue id to the labels
+    # Get list of existing label names
+    existing_label_names = []
+    for existing_label in existing_issue.labels:
+        if existing_label.name not in existing_label_names:
+            existing_label_names.append(existing_label.name)
+
+    # Add labels to db
     for label in issue['labels']:
-        label["issue_id"] = existing_issue.id
-        new_label = Label(**label)
-        session.add(new_label)
-        session.commit()
+        # don't add duplicates
+        if label["name"] not in existing_label_names:
+            # add the issue id to the labels
+            label["issue_id"] = existing_issue.id
+            new_label = Label(**label)
+            session.add(new_label)
+            session.commit()
 
 
 def save_event_info(session, event_dict):
