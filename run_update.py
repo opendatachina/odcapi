@@ -1,7 +1,7 @@
-import os, sys, csv, yaml
+import os, sys, yaml
 import logging
 from urlparse import urlparse
-from csv import DictReader, Sniffer
+from csv import DictReader
 from itertools import groupby
 from operator import itemgetter
 from StringIO import StringIO
@@ -123,17 +123,7 @@ def get_organizations_from_spreadsheet(org_source):
         Return a list of dictionaries, one for each row past the header.
     '''
     got = get(org_source)
-
-    #
-    # Requests response.text is a lying liar, with its UTF8 bytes as unicode()?
-    # Use response.content to plain bytes, then decode everything.
-    #
     organizations = list(DictReader(StringIO(got.content)))
-
-    for (index, org) in enumerate(organizations):
-        organizations[index] = dict([(k.decode('utf8'), v.decode('utf8'))
-                                     for (k, v) in org.items()])
-
     return organizations
 
 def get_organizations_from_government_github_com(org_source):
@@ -308,9 +298,6 @@ def update_project_info(project):
         if existing_project:
             # project gets existing last_updated
             project['last_updated'] = existing_project.last_updated
-
-            # be ready for utf8 bites
-            project['description'] = project['description'].decode('utf-8')
 
             # unless one of the fields has been updated
             if 'description' in project:
