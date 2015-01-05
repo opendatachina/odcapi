@@ -114,7 +114,7 @@ class Organization(db.Model):
         self.longitude = longitude
         self.keep = True
         self.last_updated = time.time()
-        self.started_on = str(date.today())
+        self.started_on = unicode(date.today())
 
     def current_events(self):
         '''
