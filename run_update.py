@@ -1,5 +1,6 @@
 import os, sys, csv, yaml
 import logging
+import warnings
 from urlparse import urlparse
 from csv import DictReader, Sniffer
 from itertools import groupby
@@ -25,10 +26,12 @@ logger = logging.getLogger(__name__)
 requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 
+warnings.filterwarnings('error')
+
 # Org sources can be csv or yaml
 # They should be lists of organizations you want included at /organizations
 # columns should be name, website, events_url, rss, projects_list_url, city, latitude, longitude, type
-ORG_SOURCES = 'org_sources.csv'
+ORG_SOURCES = 'test_org_sources.csv'
 
 if 'GITHUB_TOKEN' in os.environ:
     github_auth = (os.environ['GITHUB_TOKEN'], '')
@@ -482,7 +485,7 @@ def get_issues(org_name):
 
         elif not got.status_code in range(400,499):
             # Update project's last_updated_issue field
-            project.last_updated_issues = got.headers['ETag']
+            project.last_updated_issues = unicode(got.headers['ETag'])
             db.session.add(project)
 
             responses = get_adjoined_json_lists(got, headers={'If-None-Match': project.last_updated_issues})
