@@ -184,7 +184,7 @@ def get_stories(organization):
     #
     # Return dictionaries for the two most recent entries.
     #
-    return [dict(title=e.title, link=e.link, type="blog", organization_name=organization.name)
+    return [dict(title=e.title, link=e.link, type=u'blog', organization_name=organization.name)
             for e in d.entries[:2]]
 
 def get_adjoined_json_lists(response, headers=None):
