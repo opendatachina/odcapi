@@ -1,7 +1,7 @@
 import os, sys, csv, yaml
 import logging
+# debug
 import warnings
-import pdb
 from urlparse import urlparse
 from csv import DictReader, Sniffer
 from itertools import groupby
@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 
+# debug
 warnings.filterwarnings('error')
 
 # Org sources can be csv or yaml
@@ -246,8 +247,10 @@ def get_projects(organization):
             if "csv" in organization.projects_list_url:
                 data = response.content.splitlines()
                 projects = list(DictReader(data, dialect='excel'))
-                pdb.set_trace()
-                # :::here
+                # convert all the values to unicode
+                for project in projects:
+                    for k, v in project.items():
+                        project[k] = unicode(v)
 
             # Else just grab it as json
             else:
