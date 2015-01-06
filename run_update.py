@@ -323,9 +323,6 @@ def update_project_info(project):
             # project gets existing last_updated
             project['last_updated'] = existing_project.last_updated
 
-            # be ready for utf8 bites
-            project['description'] = project['description'].decode('utf8')
-
             # unless one of the fields has been updated
             if 'description' in project:
                 if project['description'] != existing_project.description:
