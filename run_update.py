@@ -249,8 +249,13 @@ def get_projects(organization):
                 projects = list(DictReader(data, dialect='excel'))
                 # convert all the values to unicode
                 for project in projects:
-                    for k, v in project.items():
-                        project[k] = unicode(v)
+                    for project_key, project_value in project.items():
+                        # some values might be lists
+                        if type(project_value) is list:
+                            project_value = [unicode(item.decode('utf8')) for item in project_value]
+                            project[project_key] = project_value
+                        else:
+                            project[project_key] = unicode(project_value.decode('utf8'))
 
             # Else just grab it as json
             else:
