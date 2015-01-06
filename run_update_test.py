@@ -105,22 +105,22 @@ class RunUpdateTestCase(unittest.TestCase):
         self.assertEqual(organization.name,u'Cöde for Ameriça')
 
         # check for the one project
-        filter = Project.name == 'SouthBendVoices'
+        filter = Project.name == u'SouthBendVoices'
         project = self.db.session.query(Project).filter(filter).first()
         self.assertIsNotNone(project)
-        self.assertEqual(project.name,'SouthBendVoices')
+        self.assertEqual(project.name,u'SouthBendVoices')
 
         # check for the other project
-        filter = Project.name == 'cityvoice'
+        filter = Project.name == u'cityvoice'
         project = self.db.session.query(Project).filter(filter).first()
         self.assertIsNotNone(project)
-        self.assertEqual(project.name,'cityvoice')
+        self.assertEqual(project.name,u'cityvoice')
 
         # check for cityvoice project's issues
         filter = Issue.project_id == project.id
         issue = self.db.session.query(Issue).filter(filter).first()
         self.assertIsNotNone(issue)
-        self.assertEqual(issue.title, 'Important cityvoice issue')
+        self.assertEqual(issue.title,u'Important cityvoice issue')
 
     def test_main_with_good_new_data(self):
         ''' When current organization data is not the same set as existing, saved organization data,
@@ -129,10 +129,10 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         from factories import OrganizationFactory, ProjectFactory, EventFactory, IssueFactory
 
-        old_organization = OrganizationFactory(name='Old Organization')
-        old_project = ProjectFactory(name='Old Project', organization_name='Old Organization')
-        old_event = EventFactory(name='Old Event', organization_name='Old Organization')
-        old_issue = IssueFactory(title='Old Issue', project_id=1)
+        old_organization = OrganizationFactory(name=u'Old Organization')
+        old_project = ProjectFactory(name=u'Old Project', organization_name=u'Old Organization')
+        old_event = EventFactory(name=u'Old Event', organization_name=u'Old Organization')
+        old_issue = IssueFactory(title=u'Old Issue', project_id=1)
         self.db.session.flush()
 
         self.mock_rss_response()
@@ -146,22 +146,22 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Organization, Project, Event, Issue
 
         # make sure old org is no longer there
-        filter = Organization.name == 'Old Organization'
+        filter = Organization.name == u'Old Organization'
         organization = self.db.session.query(Organization).filter(filter).first()
         self.assertIsNone(organization)
 
         # make sure old project is no longer there
-        filter = Project.name == 'Old Project'
+        filter = Project.name == u'Old Project'
         project = self.db.session.query(Project).filter(filter).first()
         self.assertIsNone(project)
 
         # make sure the old issue is no longer there
-        filter = Issue.title == 'Old Issue'
+        filter = Issue.title == u'Old Issue'
         issue = self.db.session.query(Issue).filter(filter).first()
         self.assertIsNone(issue)
 
         # make sure old event is no longer there
-        filter = Event.name == 'Old Event'
+        filter = Event.name == u'Old Event'
         event = self.db.session.query(Event).filter(filter).first()
         self.assertIsNone(event)
 
@@ -172,38 +172,38 @@ class RunUpdateTestCase(unittest.TestCase):
         self.assertEqual(organization.name, u'Cöde for Ameriça')
 
         # check for the one project
-        filter = Project.name == 'SouthBendVoices'
+        filter = Project.name == u'SouthBendVoices'
         project = self.db.session.query(Project).filter(filter).first()
-        self.assertEqual(project.name,'SouthBendVoices')
+        self.assertEqual(project.name,u'SouthBendVoices')
 
         # check for the one issue
-        filter = Issue.title == 'Important cityvoice issue'
+        filter = Issue.title == u'Important cityvoice issue'
         issue = self.db.session.query(Issue).filter(filter).first()
-        self.assertEqual(issue.title, 'Important cityvoice issue')
+        self.assertEqual(issue.title,u'Important cityvoice issue')
 
         # check for events
-        filter = Event.name.in_(['Organizational meeting',
-                                 'Code Across: Launch event',
-                                 'Brigade Ideation (Brainstorm and Prototyping) Session.'])
+        filter = Event.name.in_([u'Organizational meeting',
+                                 u'Code Across: Launch event',
+                                 u'Brigade Ideation (Brainstorm and Prototyping) Session.'])
         events = self.db.session.query(Event).filter(filter).all()
 
         first_event = events.pop(0)
         # Thu, 16 Jan 2014 19:00:00 -05:00
         self.assertEqual(first_event.utc_offset, -5 * 3600)
         self.assertEqual(first_event.start_time_notz, datetime.datetime(2014, 1, 16, 19, 0, 0))
-        self.assertEqual(first_event.name, 'Organizational meeting')
+        self.assertEqual(first_event.name,u'Organizational meeting')
 
         second_event = events.pop(0)
         # Thu, 20 Feb 2014 18:30:00 -05:00
         self.assertEqual(first_event.utc_offset, -5 * 3600)
         self.assertEqual(second_event.start_time_notz, datetime.datetime(2014, 2, 20, 18, 30, 0))
-        self.assertEqual(second_event.name, 'Code Across: Launch event')
+        self.assertEqual(second_event.name,u'Code Across: Launch event')
 
         third_event = events.pop(0)
         # Wed, 05 Mar 2014 17:30:00 -05:00
         self.assertEqual(first_event.utc_offset, -5 * 3600)
         self.assertEqual(third_event.start_time_notz, datetime.datetime(2014, 3, 5, 17, 30, 0))
-        self.assertEqual(third_event.name, 'Brigade Ideation (Brainstorm and Prototyping) Session.')
+        self.assertEqual(third_event.name,u'Brigade Ideation (Brainstorm and Prototyping) Session.')
 
     def test_main_with_missing_projects(self):
         ''' When github returns a 404 when trying to retrieve project data,
@@ -366,7 +366,7 @@ class RunUpdateTestCase(unittest.TestCase):
         self.mock_rss_response()
 
         from factories import OrganizationFactory
-        organization = OrganizationFactory(name='Code for America')
+        organization = OrganizationFactory(name=u'Code for America')
 
         with HTTMock(self.response_content):
             import run_update as ru
@@ -381,8 +381,8 @@ class RunUpdateTestCase(unittest.TestCase):
         self.assertEqual(stories_count, 2)
 
         stories = self.db.session.query(Story).all()
-        self.assertEqual(stories[0].title, "Four Great Years")
-        self.assertEqual(stories[1].title, "Open, transparent Chattanooga")
+        self.assertEqual(stories[0].title,u'Four Great Years')
+        self.assertEqual(stories[1].title, u'Open, transparent Chattanooga')
 
     def test_github_throttling(self):
         '''
@@ -494,8 +494,8 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' test that issues are following page links '''
         from factories import OrganizationFactory, ProjectFactory
 
-        organization = OrganizationFactory(name='Code for America', projects_list_url="http://codeforamerica.org/projects.csv")
-        project = ProjectFactory(organization_name='Code for America',code_url='https://github.com/TESTORG/TESTPROJECT')
+        organization = OrganizationFactory(name=u'Code for America', projects_list_url=u'http://codeforamerica.org/projects.csv')
+        project = ProjectFactory(organization_name=u'Code for America',code_url=u'https://github.com/TESTORG/TESTPROJECT')
 
         def response_content(url, request):
             if url.geturl() == 'https://api.github.com/repos/TESTORG/TESTPROJECT/issues':
@@ -520,8 +520,8 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Project
         from factories import OrganizationFactory, ProjectFactory
 
-        organization = OrganizationFactory(name="TEST ORG", projects_list_url="http://www.gdocs.com/projects.csv")
-        project = ProjectFactory(organization_name="TEST ORG", name="TEST PROJECT2", description="TEST DESCRIPTION 2", link_url="http://testurl.org")
+        organization = OrganizationFactory(name=u'TEST ORG', projects_list_url=u'http://www.gdocs.com/projects.csv')
+        project = ProjectFactory(organization_name=u'TEST ORG', name=u'TEST PROJECT2', description=u'TEST DESCRIPTION 2', link_url=u'http://testurl.org')
         self.db.session.flush()
 
         def response_content(url, request):
