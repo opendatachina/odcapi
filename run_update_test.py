@@ -581,5 +581,16 @@ class RunUpdateTestCase(unittest.TestCase):
             assert (label.issue_id, label.name) not in unique_labels
             unique_labels.append((label.issue_id, label.name))
 
+    def test_unicode_warning(self):
+        ''' Testing for the postgres unicode warning
+        '''
+        import run_update
+        import warnings
+
+        warnings.filterwarnings('error')
+
+        with HTTMock(self.response_content):
+            run_update.main(org_sources="test_org_sources.csv")
+
 if __name__ == '__main__':
     unittest.main()

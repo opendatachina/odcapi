@@ -1,6 +1,6 @@
 import os, sys, csv, yaml
 import logging
-# debug
+# :NOTE: debug
 #import warnings
 from urlparse import urlparse
 from csv import DictReader, Sniffer
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 
-# debug
+# :NOTE: debug
 #warnings.filterwarnings('error')
 
 # Org sources can be csv or yaml
