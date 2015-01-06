@@ -1,7 +1,7 @@
 import os, sys, csv, yaml
 import logging
 # debug
-import warnings
+#import warnings
 from urlparse import urlparse
 from csv import DictReader, Sniffer
 from itertools import groupby
@@ -28,7 +28,7 @@ requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 
 # debug
-warnings.filterwarnings('error')
+#warnings.filterwarnings('error')
 
 # Org sources can be csv or yaml
 # They should be lists of organizations you want included at /organizations
@@ -324,7 +324,7 @@ def update_project_info(project):
             project['last_updated'] = existing_project.last_updated
 
             # be ready for utf8 bites
-            project['description'] = project['description'].decode('utf-8')
+            project['description'] = project['description'].decode('utf8')
 
             # unless one of the fields has been updated
             if 'description' in project:
