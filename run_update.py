@@ -386,7 +386,7 @@ def update_project_info(project):
             elif got.status_code == 403:
                 logging.error("GitHub Rate Limit Remaining: " + str(got.headers["x-ratelimit-remaining"]))
                 error_dict = {
-                  "error" : 'IOError: We done got throttled by GitHub',
+                  "error" : u'IOError: We done got throttled by GitHub',
                   "time" : datetime.now()
                 }
                 new_error = Error(**error_dict)
@@ -748,7 +748,7 @@ def main(org_name=None, org_sources=None):
 
       if not is_safe_name(org_info['name']):
           error_dict = {
-            "error" : 'ValueError: Bad organization name: "%s"' % org_info['name'],
+            "error" : unicode('ValueError: Bad organization name: "%s"' % org_info['name']),
             "time" : datetime.now()
           }
           new_error = Error(**error_dict)
