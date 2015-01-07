@@ -753,7 +753,6 @@ class ApiTest(unittest.TestCase):
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
 
-    #:::here
     def test_organization_issues(self):
         '''
         Test getting all of an organization's issues
@@ -777,9 +776,10 @@ class ApiTest(unittest.TestCase):
 
         self.assertEqual(response['objects'][0]['title'], u'Civic Issue 1.1')
 
+    #:::here
     def test_cascading_delete(self):
         '''
-        Test that when an organization is deleted, all of it's projects, issues, stories, events are deleted
+        Test that when an organization is deleted, all of its projects, issues, stories, events are deleted
         '''
         # Create an organization
         organization = OrganizationFactory()
@@ -966,7 +966,6 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response['total'], 1)
         self.assertEqual(response['objects'][0]['title'], u'Sad issue')
 
-    #:::here
     def test_org_dont_show_issues(self):
         ''' Test that calls to /organizations dont return project issues '''
         from factories import OrganizationFactory, ProjectFactory, IssueFactory
@@ -982,36 +981,54 @@ class ApiTest(unittest.TestCase):
                 self.assertFalse('issues' in org['current_projects'][0])
                 break
 
+    #:::here
     def test_issue_cascading_deletes(self):
         ''' Test that labels get deleted when their parent
             issue, project, and org is deleted
         '''
+
+        # set up test objects and delete an issue
         organization = OrganizationFactory(name=u'TEST ORG')
-        project = ProjectFactory(organization_name=u'TEST ORG', name=u'TEST PROJECT')
-        issue = IssueFactory(title=u'TEST ISSUE', project_id=1)
-        label = LabelFactory(issue_id=1)
-        db.session.commit()
+        db.session.flush()
+
+        project = ProjectFactory(organization_name=organization.name, name=u'TEST PROJECT')
+        db.session.flush()
+
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=project.id)
+        db.session.flush()
+
+        label = LabelFactory(issue_id=issue.id)
+        db.session.flush()
 
         db.session.execute('DELETE FROM issue')
-        db.session.commit()
+        db.session.flush()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
-        issue = IssueFactory(title=u'TEST ISSUE', project_id=1)
-        label = LabelFactory(issue_id=2)
-        db.session.commit()
+        # delete a project
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=project.id)
+        db.session.flush()
+
+        label = LabelFactory(issue_id=issue.id)
+        db.session.flush()
+
         db.session.execute('DELETE FROM project')
-        db.session.commit()
+        db.session.flush()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
-        project = ProjectFactory(organization_name=u'TEST ORG', name=u'TEST PROJECT')
-        issue = IssueFactory(title=u'TEST ISSUE', project_id=2)
-        label = LabelFactory(issue_id=3)
-        db.session.commit()
+        # delete an organization
+        project = ProjectFactory(organization_name=organization.name, name=u'TEST PROJECT')
+        db.session.flush()
+
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=project.id)
+        db.session.flush()
+
+        label = LabelFactory(issue_id=issue.id)
+        db.session.flush()
 
         db.session.execute('DELETE FROM organization')
-        db.session.commit()
+        db.session.flush()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
