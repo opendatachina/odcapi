@@ -25,60 +25,60 @@ class ApiTest(unittest.TestCase):
         '''
         Show three most recently updated github projects
         '''
-        organization = OrganizationFactory(name='Code for San Francisco')
+        organization = OrganizationFactory(name=u'Code for San Francisco')
         db.session.flush()
 
-        ProjectFactory(organization_name=organization.name, name="Project 1", last_updated="Mon, 01 Jan 2010 00:00:00 GMT")
-        ProjectFactory(organization_name=organization.name, name="Project 2", last_updated="Tue, 01 Jan 2011 00:00:00 GMT")
-        ProjectFactory(organization_name=organization.name, name="Non Github Project", last_updated="Wed, 01 Jan 2013 00:00:00 ", github_details=None)
-        ProjectFactory(organization_name=organization.name, name="Project 3", last_updated="Thu, 01 Jan 2014 00:00:00 GMT")
+        ProjectFactory(organization_name=organization.name, name=u'Project 1', last_updated='Mon, 01 Jan 2010 00:00:00 GMT')
+        ProjectFactory(organization_name=organization.name, name=u'Project 2', last_updated='Tue, 01 Jan 2011 00:00:00 GMT')
+        ProjectFactory(organization_name=organization.name, name=u'Non Github Project', last_updated='Wed, 01 Jan 2013 00:00:00', github_details=None)
+        ProjectFactory(organization_name=organization.name, name=u'Project 3', last_updated='Thu, 01 Jan 2014 00:00:00 GMT')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code-for-San-Francisco')
         response = json.loads(response.data)
 
         self.assertEqual(len(response['current_projects']), 3)
-        self.assertEqual(response['current_projects'][0]['name'], "Project 3")
-        self.assertEqual(response['current_projects'][1]['name'], "Non Github Project")
-        self.assertEqual(response['current_projects'][2]['name'], "Project 2")
+        self.assertEqual(response['current_projects'][0]['name'], u'Project 3')
+        self.assertEqual(response['current_projects'][1]['name'], u'Non Github Project')
+        self.assertEqual(response['current_projects'][2]['name'], u'Project 2')
 
     def test_all_projects_order(self):
         '''
         Test that projects gets returned in order of last_updated
         '''
-        ProjectFactory(name="Project 1", last_updated="Mon, 01 Jan 2010 00:00:00 GMT")
-        ProjectFactory(name="Project 2", last_updated="Tue, 01 Jan 2011 00:00:00 GMT")
-        ProjectFactory(name="Non Github Project", last_updated="Wed, 01 Jan 2013 00:00:00 ", github_details=None)
-        ProjectFactory(name="Project 3", last_updated="Thu, 01 Jan 2014 00:00:00 GMT")
+        ProjectFactory(name=u'Project 1', last_updated='Mon, 01 Jan 2010 00:00:00 GMT')
+        ProjectFactory(name=u'Project 2', last_updated='Tue, 01 Jan 2011 00:00:00 GMT')
+        ProjectFactory(name=u'Non Github Project', last_updated='Wed, 01 Jan 2013 00:00:00', github_details=None)
+        ProjectFactory(name=u'Project 3', last_updated='Thu, 01 Jan 2014 00:00:00 GMT')
         db.session.flush()
 
         response = self.app.get('/api/projects')
         response = json.loads(response.data)
 
-        self.assertEqual(response['objects'][0]['name'], "Project 3")
-        self.assertEqual(response['objects'][1]['name'], "Non Github Project")
-        self.assertEqual(response['objects'][2]['name'], "Project 2")
-        self.assertEqual(response['objects'][3]['name'], "Project 1")
+        self.assertEqual(response['objects'][0]['name'], u'Project 3')
+        self.assertEqual(response['objects'][1]['name'], u'Non Github Project')
+        self.assertEqual(response['objects'][2]['name'], u'Project 2')
+        self.assertEqual(response['objects'][3]['name'], u'Project 1')
 
     def test_orgs_projects_order(self):
         ''' Test that a orgs projects come back in order of last_updated.
         '''
-        organization = OrganizationFactory(name='Code for San Francisco')
+        organization = OrganizationFactory(name=u'Code for San Francisco')
         db.session.flush()
 
-        ProjectFactory(organization_name=organization.name, name="Project 1", last_updated="Mon, 01 Jan 2010 00:00:00 GMT")
-        ProjectFactory(organization_name=organization.name, name="Project 2", last_updated="Tue, 01 Jan 2011 00:00:00 GMT")
-        ProjectFactory(organization_name=organization.name, name="Non Github Project", last_updated="Wed, 01 Jan 2013 00:00:00 ", github_details=None)
-        ProjectFactory(organization_name=organization.name, name="Project 3", last_updated="Thu, 01 Jan 2014 00:00:00 GMT")
+        ProjectFactory(organization_name=organization.name, name=u'Project 1', last_updated='Mon, 01 Jan 2010 00:00:00 GMT')
+        ProjectFactory(organization_name=organization.name, name=u'Project 2', last_updated='Tue, 01 Jan 2011 00:00:00 GMT')
+        ProjectFactory(organization_name=organization.name, name=u'Non Github Project', last_updated='Wed, 01 Jan 2013 00:00:00', github_details=None)
+        ProjectFactory(organization_name=organization.name, name=u'Project 3', last_updated='Thu, 01 Jan 2014 00:00:00 GMT')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code-for-San-Francisco/projects')
         response = json.loads(response.data)
 
-        self.assertEqual(response['objects'][0]['name'], "Project 3")
-        self.assertEqual(response['objects'][1]['name'], "Non Github Project")
-        self.assertEqual(response['objects'][2]['name'], "Project 2")
-        self.assertEqual(response['objects'][3]['name'], "Project 1")
+        self.assertEqual(response['objects'][0]['name'], u'Project 3')
+        self.assertEqual(response['objects'][1]['name'], u'Non Github Project')
+        self.assertEqual(response['objects'][2]['name'], u'Project 2')
+        self.assertEqual(response['objects'][3]['name'], u'Project 1')
 
     def test_current_events(self):
         '''
@@ -86,113 +86,113 @@ class ApiTest(unittest.TestCase):
         If there are no events in the future, no events will be returned
         '''
         # Assuming today is Christmas...
-        organization = OrganizationFactory(name='Collective of Ericas')
+        organization = OrganizationFactory(name=u'Collective of Ericas')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Christmas Eve", start_time_notz=datetime.now() - timedelta(1))
-        EventFactory(organization_name=organization.name, name="New Years", start_time_notz=datetime.now() + timedelta(7))
-        EventFactory(organization_name=organization.name, name="MLK Day", start_time_notz=datetime.now() + timedelta(25))
-        EventFactory(organization_name=organization.name, name="Cesar Chavez Day", start_time_notz=datetime.now() + timedelta(37))
+        EventFactory(organization_name=organization.name, name=u'Christmas Eve', start_time_notz=datetime.now() - timedelta(1))
+        EventFactory(organization_name=organization.name, name=u'New Years', start_time_notz=datetime.now() + timedelta(7))
+        EventFactory(organization_name=organization.name, name=u'MLK Day', start_time_notz=datetime.now() + timedelta(25))
+        EventFactory(organization_name=organization.name, name=u'Cesar Chavez Day', start_time_notz=datetime.now() + timedelta(37))
         db.session.flush()
 
         response = self.app.get('/api/organizations/Collective%20of%20Ericas')
         response_json = json.loads(response.data)
 
         self.assertEqual(len(response_json['current_events']), 2)
-        self.assertEqual(response_json['current_events'][0]['name'], "New Years")
-        self.assertEqual(response_json['current_events'][1]['name'], "MLK Day")
-        self.assertEqual(response_json['current_events'][0]['organization_name'], "Collective of Ericas")
+        self.assertEqual(response_json['current_events'][0]['name'], u'New Years')
+        self.assertEqual(response_json['current_events'][1]['name'], u'MLK Day')
+        self.assertEqual(response_json['current_events'][0]['organization_name'], u'Collective of Ericas')
 
     def test_all_upcoming_events(self):
         '''
         Test the /events/upcoming_events end point.
         '''
         # World Cup teams
-        organization = OrganizationFactory(name='USA USA USA')
+        organization = OrganizationFactory(name=u'USA USA USA')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(1000))
-        EventFactory(organization_name=organization.name, name="Event One", start_time_notz=datetime.now() + timedelta(10))
-        EventFactory(organization_name=organization.name, name="Event Four", start_time_notz=datetime.now() + timedelta(100))
-        EventFactory(organization_name=organization.name, name="Event Seven", start_time_notz=datetime.now() + timedelta(1000))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(1000))
+        EventFactory(organization_name=organization.name, name=u'Event One', start_time_notz=datetime.now() + timedelta(10))
+        EventFactory(organization_name=organization.name, name=u'Event Four', start_time_notz=datetime.now() + timedelta(100))
+        EventFactory(organization_name=organization.name, name=u'Event Seven', start_time_notz=datetime.now() + timedelta(1000))
         db.session.flush()
 
         # World Cup teams
-        organization = OrganizationFactory(name='Brazil')
+        organization = OrganizationFactory(name=u'Brazil')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(2000))
-        EventFactory(organization_name=organization.name, name="Event Two", start_time_notz=datetime.now() + timedelta(20))
-        EventFactory(organization_name=organization.name, name="Event Five", start_time_notz=datetime.now() + timedelta(200))
-        EventFactory(organization_name=organization.name, name="Event Eight", start_time_notz=datetime.now() + timedelta(2000))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(2000))
+        EventFactory(organization_name=organization.name, name=u'Event Two', start_time_notz=datetime.now() + timedelta(20))
+        EventFactory(organization_name=organization.name, name=u'Event Five', start_time_notz=datetime.now() + timedelta(200))
+        EventFactory(organization_name=organization.name, name=u'Event Eight', start_time_notz=datetime.now() + timedelta(2000))
         db.session.flush()
 
         # World Cup teams
-        organization = OrganizationFactory(name='GER')
+        organization = OrganizationFactory(name=u'GER')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(3000))
-        EventFactory(organization_name=organization.name, name="Event Three", start_time_notz=datetime.now() + timedelta(30))
-        EventFactory(organization_name=organization.name, name="Event Six", start_time_notz=datetime.now() + timedelta(300))
-        EventFactory(organization_name=organization.name, name="Event Nine", start_time_notz=datetime.now() + timedelta(3000))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(3000))
+        EventFactory(organization_name=organization.name, name=u'Event Three', start_time_notz=datetime.now() + timedelta(30))
+        EventFactory(organization_name=organization.name, name=u'Event Six', start_time_notz=datetime.now() + timedelta(300))
+        EventFactory(organization_name=organization.name, name=u'Event Nine', start_time_notz=datetime.now() + timedelta(3000))
         db.session.flush()
 
         response = self.app.get('/api/events/upcoming_events')
         response_json = json.loads(response.data)
 
         self.assertEqual(len(response_json['objects']), 9)
-        self.assertEqual(response_json['objects'][0]['name'], "Event One")
-        self.assertEqual(response_json['objects'][1]['name'], "Event Two")
-        self.assertEqual(response_json['objects'][8]['name'], "Event Nine")
+        self.assertEqual(response_json['objects'][0]['name'], u'Event One')
+        self.assertEqual(response_json['objects'][1]['name'], u'Event Two')
+        self.assertEqual(response_json['objects'][8]['name'], u'Event Nine')
 
     def test_all_upcoming_events_with_params(self):
         '''
         Test the /events/upcoming_events end point with params.
         '''
         # World Cup teams
-        organization = OrganizationFactory(name='USA USA USA', type='Code for All')
+        organization = OrganizationFactory(name=u'USA USA USA', type=u'Code for All')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(1000))
-        EventFactory(organization_name=organization.name, name="Event One", start_time_notz=datetime.now() + timedelta(10))
-        EventFactory(organization_name=organization.name, name="Event Four", start_time_notz=datetime.now() + timedelta(100))
-        EventFactory(organization_name=organization.name, name="Event Seven", start_time_notz=datetime.now() + timedelta(1000))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(1000))
+        EventFactory(organization_name=organization.name, name=u'Event One', start_time_notz=datetime.now() + timedelta(10))
+        EventFactory(organization_name=organization.name, name=u'Event Four', start_time_notz=datetime.now() + timedelta(100))
+        EventFactory(organization_name=organization.name, name=u'Event Seven', start_time_notz=datetime.now() + timedelta(1000))
         db.session.flush()
 
         # World Cup teams
-        organization = OrganizationFactory(name='Brazil')
+        organization = OrganizationFactory(name=u'Brazil')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(2000))
-        EventFactory(organization_name=organization.name, name="Event Two", start_time_notz=datetime.now() + timedelta(20))
-        EventFactory(organization_name=organization.name, name="Event Five", start_time_notz=datetime.now() + timedelta(200))
-        EventFactory(organization_name=organization.name, name="Event Eight", start_time_notz=datetime.now() + timedelta(2000))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(2000))
+        EventFactory(organization_name=organization.name, name=u'Event Two', start_time_notz=datetime.now() + timedelta(20))
+        EventFactory(organization_name=organization.name, name=u'Event Five', start_time_notz=datetime.now() + timedelta(200))
+        EventFactory(organization_name=organization.name, name=u'Event Eight', start_time_notz=datetime.now() + timedelta(2000))
         db.session.flush()
 
         # World Cup teams
-        organization = OrganizationFactory(name='GER', type='Code for All')
+        organization = OrganizationFactory(name=u'GER', type=u'Code for All')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(3000))
-        EventFactory(organization_name=organization.name, name="Event Three", start_time_notz=datetime.now() + timedelta(30))
-        EventFactory(organization_name=organization.name, name="Event Six", start_time_notz=datetime.now() + timedelta(300))
-        EventFactory(organization_name=organization.name, name="Event Nine", start_time_notz=datetime.now() + timedelta(3000))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(3000))
+        EventFactory(organization_name=organization.name, name=u'Event Three', start_time_notz=datetime.now() + timedelta(30))
+        EventFactory(organization_name=organization.name, name=u'Event Six', start_time_notz=datetime.now() + timedelta(300))
+        EventFactory(organization_name=organization.name, name=u'Event Nine', start_time_notz=datetime.now() + timedelta(3000))
         db.session.flush()
 
         response = self.app.get('/api/events/upcoming_events?organization_type=Code for All')
         response_json = json.loads(response.data)
 
         self.assertEqual(len(response_json['objects']), 6)
-        self.assertEqual(response_json['objects'][0]['name'], "Event One")
-        self.assertEqual(response_json['objects'][1]['name'], "Event Three")
-        self.assertEqual(response_json['objects'][5]['name'], "Event Nine")
+        self.assertEqual(response_json['objects'][0]['name'], u'Event One')
+        self.assertEqual(response_json['objects'][1]['name'], u'Event Three')
+        self.assertEqual(response_json['objects'][5]['name'], u'Event Nine')
 
 
     def test_all_past_events(self):
@@ -200,29 +200,29 @@ class ApiTest(unittest.TestCase):
         Test the /events/past_events end point.
         '''
         # World Cup teams
-        organization = OrganizationFactory(name='USA USA USA', type='Code for All')
+        organization = OrganizationFactory(name=u'USA USA USA', type=u'Code for All')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(1000))
-        EventFactory(organization_name=organization.name, name="Event One", start_time_notz=datetime.now() + timedelta(10))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(1000))
+        EventFactory(organization_name=organization.name, name=u'Event One', start_time_notz=datetime.now() + timedelta(10))
         db.session.flush()
 
         # World Cup teams
-        organization = OrganizationFactory(name='Brazil')
+        organization = OrganizationFactory(name=u'Brazil')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(2000))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(2000))
         db.session.flush()
 
         # World Cup teams
-        organization = OrganizationFactory(name='GER', type='Code for All')
+        organization = OrganizationFactory(name=u'GER', type=u'Code for All')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Past Event", start_time_notz=datetime.now() - timedelta(3000))
-        EventFactory(organization_name=organization.name, name="Event Three", start_time_notz=datetime.now() + timedelta(30))
+        EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(3000))
+        EventFactory(organization_name=organization.name, name=u'Event Three', start_time_notz=datetime.now() + timedelta(30))
         db.session.flush()
 
         response = self.app.get('/api/events/past_events?organization_type=Code for All')
@@ -234,17 +234,17 @@ class ApiTest(unittest.TestCase):
         '''
         Test that only the two most recent stories are being returned
         '''
-        organization = OrganizationFactory(name='Collective of Ericas')
+        organization = OrganizationFactory(name=u'Collective of Ericas')
         db.session.flush()
 
-        StoryFactory(organization_name='Collective of Ericas', title='First Story')
-        StoryFactory(organization_name='Collective of Ericas', title='Second Story')
+        StoryFactory(organization_name=u'Collective of Ericas', title=u'First Story')
+        StoryFactory(organization_name=u'Collective of Ericas', title=u'Second Story')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Collective%20of%20Ericas')
         response_json = json.loads(response.data)
-        self.assertEqual(response_json['current_stories'][0]['title'], 'Second Story')
-        self.assertEqual(response_json['current_stories'][1]['title'], 'First Story')
+        self.assertEqual(response_json['current_stories'][0]['title'], u'Second Story')
+        self.assertEqual(response_json['current_stories'][1]['title'], u'First Story')
 
     def test_headers(self):
         OrganizationFactory()
@@ -269,7 +269,7 @@ class ApiTest(unittest.TestCase):
         assert response.status_code == 404
 
     def test_brigade_name_request(self):
-        OrganizationFactory(name='Code for San Francisco')
+        OrganizationFactory(name=u'Code for San Francisco')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code for San Francisco')
@@ -350,8 +350,8 @@ class ApiTest(unittest.TestCase):
         self.assertNotIn('prev', response['pages'])
 
     def test_good_orgs_projects(self):
-        organization = OrganizationFactory(name="Code for America")
-        project = ProjectFactory(organization_name="Code for America")
+        organization = OrganizationFactory(name=u'Code for America')
+        project = ProjectFactory(organization_name=u'Code for America')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code for America/projects')
@@ -396,8 +396,8 @@ class ApiTest(unittest.TestCase):
         assert (response['objects'][2]['id'] == 1)
 
     def test_orgs_stories(self):
-        organization = OrganizationFactory(name="Code for America")
-        story = StoryFactory(organization_name="Code for America")
+        organization = OrganizationFactory(name=u'Code for America')
+        story = StoryFactory(organization_name=u'Code for America')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code for America/stories')
@@ -406,9 +406,9 @@ class ApiTest(unittest.TestCase):
         assert isinstance(response, dict)
 
     def test_orgs_current_stories_order(self):
-        organization = OrganizationFactory(name="Code for America")
-        StoryFactory(organization_name="Code for America")
-        StoryFactory(organization_name="Code for America")
+        organization = OrganizationFactory(name=u'Code for America')
+        StoryFactory(organization_name=u'Code for America')
+        StoryFactory(organization_name=u'Code for America')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code for America')
@@ -417,10 +417,10 @@ class ApiTest(unittest.TestCase):
         assert response['current_stories'][1]['id'] == 1
 
     def test_orgs_stories_order(self):
-        organization = OrganizationFactory(name="Code for America")
-        StoryFactory(organization_name="Code for America")
-        StoryFactory(organization_name="Code for America")
-        StoryFactory(organization_name="Code for America")
+        organization = OrganizationFactory(name=u'Code for America')
+        StoryFactory(organization_name=u'Code for America')
+        StoryFactory(organization_name=u'Code for America')
+        StoryFactory(organization_name=u'Code for America')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code for America/stories')
@@ -454,8 +454,8 @@ class ApiTest(unittest.TestCase):
         assert isinstance(response['objects'][0]['start_time'], unicode)
 
     def test_orgs_events(self):
-        organization = OrganizationFactory(name="Code for America")
-        event = EventFactory(organization_name="Code for America")
+        organization = OrganizationFactory(name=u'Code for America')
+        event = EventFactory(organization_name=u'Code for America')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code for America/events')
@@ -464,7 +464,7 @@ class ApiTest(unittest.TestCase):
         assert isinstance(response, dict)
 
     def test_utf8_characters(self):
-        organization = OrganizationFactory(name=u"Cöde for Ameriça")
+        organization = OrganizationFactory(name=u'Cöde for Ameriça')
         db.session.add(organization)
         db.session.commit()
 
@@ -489,87 +489,87 @@ class ApiTest(unittest.TestCase):
         assert isinstance(response['name'], unicode)
 
     def test_underscores_and_spaces(self):
-        organization = OrganizationFactory(name="Code for America")
+        organization = OrganizationFactory(name=u'Code for America')
         db.session.add(organization)
         db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        scheme, netloc, path, _, _, _  = urlparse(response["all_events"])
-        self.assertTrue("-" in path)
-        self.assertFalse("_" in path)
-        self.assertFalse(" " in path)
-        scheme, netloc, path, _, _, _  = urlparse(response["all_stories"])
-        self.assertTrue("-" in path)
-        self.assertFalse("_" in path)
-        self.assertFalse(" " in path)
-        scheme, netloc, path, _, _, _  = urlparse(response["all_projects"])
-        self.assertTrue("-" in path)
-        self.assertFalse("_" in path)
-        self.assertFalse(" " in path)
+        scheme, netloc, path, _, _, _  = urlparse(response['all_events'])
+        self.assertTrue('-' in path)
+        self.assertFalse('_' in path)
+        self.assertFalse(' ' in path)
+        scheme, netloc, path, _, _, _  = urlparse(response['all_stories'])
+        self.assertTrue('-' in path)
+        self.assertFalse('_' in path)
+        self.assertFalse(' ' in path)
+        scheme, netloc, path, _, _, _  = urlparse(response['all_projects'])
+        self.assertTrue('-' in path)
+        self.assertFalse('_' in path)
+        self.assertFalse(' ' in path)
 
         response = self.app.get('/api/organizations/Code-for-America')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["name"], "Code for America")
+        self.assertEqual(response['name'], u'Code for America')
 
         response = self.app.get('/api/organizations/Code_for_America')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["name"], "Code for America")
+        self.assertEqual(response['name'], u'Code for America')
 
-        project = ProjectFactory(organization_name="Code for America")
+        project = ProjectFactory(organization_name=u'Code for America')
         db.session.add(project)
         db.session.commit()
 
         response = self.app.get('/api/organizations/Code_for_America/projects')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["objects"][0]["organization_name"], "Code for America")
+        self.assertEqual(response['objects'][0]['organization_name'], u'Code for America')
 
         response = self.app.get('/api/organizations/Code_for_America/projects')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["objects"][0]["organization_name"], "Code for America")
+        self.assertEqual(response['objects'][0]['organization_name'], u'Code for America')
 
-        event = EventFactory(organization_name="Code for America")
+        event = EventFactory(organization_name=u'Code for America')
         db.session.add(event)
         db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America/events')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["objects"][0]["organization_name"], "Code for America")
+        self.assertEqual(response['objects'][0]['organization_name'], u'Code for America')
 
         response = self.app.get('/api/organizations/Code_for_America/events')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["objects"][0]["organization_name"], "Code for America")
+        self.assertEqual(response['objects'][0]['organization_name'], u'Code for America')
 
-        story = StoryFactory(organization_name="Code for America")
+        story = StoryFactory(organization_name=u'Code for America')
         db.session.add(story)
         db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America/stories')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["objects"][0]["organization_name"], "Code for America")
+        self.assertEqual(response['objects'][0]['organization_name'], u'Code for America')
 
         response = self.app.get('/api/organizations/Code_for_America/stories')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["objects"][0]["organization_name"], "Code for America")
+        self.assertEqual(response['objects'][0]['organization_name'], u'Code for America')
 
     def test_dashes_in_slugs(self):
-        organization = OrganizationFactory(name="Code for America")
-        event = EventFactory(organization_name="Code for America")
+        organization = OrganizationFactory(name=u'Code for America')
+        event = EventFactory(organization_name=u'Code for America')
         db.session.flush()
 
         response = self.app.get('/api/organizations/Code-for-America')
         self.assertEqual(response.status_code,200)
         response = json.loads(response.data)
-        self.assertEqual(response["name"], "Code for America")
+        self.assertEqual(response['name'], u'Code for America')
 
     def test_org_upcoming_events(self):
         '''
@@ -578,13 +578,13 @@ class ApiTest(unittest.TestCase):
         furthest away in the future
         '''
         # Assuming today is Christmas...
-        organization = OrganizationFactory(name="International Cat Association")
+        organization = OrganizationFactory(name=u'International Cat Association')
         db.session.flush()
 
         # Create multiple events, some in the future, one in the past
-        EventFactory(organization_name=organization.name, name="Christmas Eve", start_time_notz=datetime.now() - timedelta(1))
-        EventFactory(organization_name=organization.name, name="New Years", start_time_notz=datetime.now() + timedelta(7))
-        EventFactory(organization_name=organization.name, name="MLK Day", start_time_notz=datetime.now() + timedelta(25))
+        EventFactory(organization_name=organization.name, name=u'Christmas Eve', start_time_notz=datetime.now() - timedelta(1))
+        EventFactory(organization_name=organization.name, name=u'New Years', start_time_notz=datetime.now() + timedelta(7))
+        EventFactory(organization_name=organization.name, name=u'MLK Day', start_time_notz=datetime.now() + timedelta(25))
         db.session.flush()
 
         # Check that future events are returned in the correct order
@@ -592,8 +592,8 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 2)
-        self.assertEqual(response['objects'][0]['name'], 'New Years')
-        self.assertEqual(response['objects'][1]['name'], 'MLK Day')
+        self.assertEqual(response['objects'][0]['name'], u'New Years')
+        self.assertEqual(response['objects'][1]['name'], u'MLK Day')
 
     def test_past_events(self):
         '''
@@ -602,13 +602,13 @@ class ApiTest(unittest.TestCase):
         furthest in the past
         '''
         # Assuming today is Christmas...
-        organization = OrganizationFactory(name="International Cat Association")
+        organization = OrganizationFactory(name=u'International Cat Association')
         db.session.flush()
 
         # Create multiple events, one in the future, some in the past
-        EventFactory(organization_name=organization.name, name="Thanksgiving", start_time_notz=datetime.now() - timedelta(30))
-        EventFactory(organization_name=organization.name, name="Christmas Eve", start_time_notz=datetime.now() - timedelta(1))
-        EventFactory(organization_name=organization.name, name="New Years", start_time_notz=datetime.now() + timedelta(7))
+        EventFactory(organization_name=organization.name, name=u'Thanksgiving', start_time_notz=datetime.now() - timedelta(30))
+        EventFactory(organization_name=organization.name, name=u'Christmas Eve', start_time_notz=datetime.now() - timedelta(1))
+        EventFactory(organization_name=organization.name, name=u'New Years', start_time_notz=datetime.now() + timedelta(7))
         db.session.flush()
 
         # Check that past events are returned in the correct order
@@ -616,8 +616,8 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 2)
-        self.assertEqual(response['objects'][0]['name'], 'Christmas Eve')
-        self.assertEqual(response['objects'][1]['name'], 'Thanksgiving')
+        self.assertEqual(response['objects'][0]['name'], u'Christmas Eve')
+        self.assertEqual(response['objects'][1]['name'], u'Thanksgiving')
 
     def test_issues(self):
         '''
@@ -630,7 +630,7 @@ class ApiTest(unittest.TestCase):
         project = ProjectFactory(organization_name=organization.name)
         db.session.add(project)
         db.session.commit()
-        issue = IssueFactory(project_id=project.id,title="TEST ISSUE",body="TEST ISSUE BODY")
+        issue = IssueFactory(project_id=project.id,title=u'TEST ISSUE',body=u'TEST ISSUE BODY')
         db.session.add(issue)
         db.session.commit()
 
@@ -639,8 +639,8 @@ class ApiTest(unittest.TestCase):
         response = json.loads(response.data)
 
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], 'TEST ISSUE')
-        self.assertEqual(response['objects'][0]['body'], 'TEST ISSUE BODY')
+        self.assertEqual(response['objects'][0]['title'], u'TEST ISSUE')
+        self.assertEqual(response['objects'][0]['body'], u'TEST ISSUE BODY')
 
         # Check for linked issues in linked project
         self.assertTrue('project' in response['objects'][0])
@@ -667,8 +667,8 @@ class ApiTest(unittest.TestCase):
         issue = IssueFactory(project_id=project.id)
         issue2 = IssueFactory(project_id=project.id)
 
-        label1 = LabelFactory(name="enhancement")
-        label2 = LabelFactory(name="hack")
+        label1 = LabelFactory(name=u'enhancement')
+        label2 = LabelFactory(name=u'hack')
         issue.labels = [label1]
         issue2.labels = [label2]
 
@@ -678,7 +678,7 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['labels'][0]['name'], "enhancement")
+        self.assertEqual(response['objects'][0]['labels'][0]['name'], u'enhancement')
 
         response = self.app.get('/api/issues/labels/enhancement,hack')
         self.assertEqual(response.status_code, 200)
@@ -689,9 +689,9 @@ class ApiTest(unittest.TestCase):
         '''
         Test that organization query params work as expected.
         '''
-        OrganizationFactory(name="Brigade Organization", type="Brigade")
-        OrganizationFactory(name="Bayamon Organization", type="Brigade", city="Bayamon, PR")
-        OrganizationFactory(name="Meetup Organization", type="Meetup")
+        OrganizationFactory(name=u'Brigade Organization', type=u'Brigade')
+        OrganizationFactory(name=u'Bayamon Organization', type=u'Brigade', city=u'Bayamon, PR')
+        OrganizationFactory(name=u'Meetup Organization', type=u'Meetup')
 
         db.session.commit()
 
@@ -699,14 +699,14 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 2)
-        self.assertEqual(response['objects'][0]['name'], "Brigade Organization")
-        self.assertEqual(response['objects'][1]['name'], "Bayamon Organization")
+        self.assertEqual(response['objects'][0]['name'], u'Brigade Organization')
+        self.assertEqual(response['objects'][1]['name'], u'Bayamon Organization')
 
         response = self.app.get('/api/organizations?type=Brigade&city=Bayamon,%20PR')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['name'], "Bayamon Organization")
+        self.assertEqual(response['objects'][0]['name'], u'Bayamon Organization')
 
         response = self.app.get('/api/organizations?type=SomeType')
         self.assertEqual(response.status_code, 200)
@@ -717,11 +717,11 @@ class ApiTest(unittest.TestCase):
         '''
         Test that project query params work as expected.
         '''
-        brigade = OrganizationFactory(name="Whatever", type="Brigade")
-        brigade_somewhere_far = OrganizationFactory(name="Brigade Organization", type="Brigade, Code for All")
-        web_project = ProjectFactory(name="Random Web App", type="web service")
-        other_web_project = ProjectFactory(name="Random Web App 2", type="web service", description="Another")
-        non_web_project = ProjectFactory(name="Random Other App", type="other service")
+        brigade = OrganizationFactory(name=u'Whatever', type=u'Brigade')
+        brigade_somewhere_far = OrganizationFactory(name=u'Brigade Organization', type=u'Brigade, Code for All')
+        web_project = ProjectFactory(name=u'Random Web App', type=u'web service')
+        other_web_project = ProjectFactory(name=u'Random Web App 2', type=u'web service', description=u'Another')
+        non_web_project = ProjectFactory(name=u'Random Other App', type=u'other service')
 
         web_project.organization = brigade
         non_web_project.organization =  brigade_somewhere_far
@@ -734,14 +734,14 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 2)
-        self.assertEqual(response['objects'][0]['name'], "Random Web App")
-        self.assertEqual(response['objects'][1]['name'], "Random Web App 2")
+        self.assertEqual(response['objects'][0]['name'], u'Random Web App')
+        self.assertEqual(response['objects'][1]['name'], u'Random Web App 2')
 
         response = self.app.get('/api/projects?type=web%20service&description=Another')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['name'], "Random Web App 2")
+        self.assertEqual(response['objects'][0]['name'], u'Random Web App 2')
 
         response = self.app.get('/api/projects?type=different%20service')
         self.assertEqual(response.status_code, 200)
@@ -753,20 +753,21 @@ class ApiTest(unittest.TestCase):
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
 
+    #:::here
     def test_organization_issues(self):
         '''
         Test getting all of an organization's issues
         '''
-        organization = OrganizationFactory(name="Civic Project", type="Not a brigade")
+        organization = OrganizationFactory(name=u'Civic Project', type=u'Not a brigade')
         db.session.flush()
 
-        project1 = ProjectFactory(organization_name=organization.name, name="Civic Project 1")
-        project2 = ProjectFactory(organization_name=organization.name, name="Civic Project 2")
+        project1 = ProjectFactory(organization_name=organization.name, name=u'Civic Project 1')
+        project2 = ProjectFactory(organization_name=organization.name, name=u'Civic Project 2')
         db.session.flush()
 
-        issue11 = IssueFactory(project_id=project1.id, title="Civic Issue 1.1")
-        issue12 = IssueFactory(project_id=project1.id, title="Civic Issue 1.2")
-        issue21 = IssueFactory(project_id=project2.id, title="Civic Issue 2.1")
+        issue11 = IssueFactory(project_id=project1.id, title=u'Civic Issue 1.1')
+        issue12 = IssueFactory(project_id=project1.id, title=u'Civic Issue 1.2')
+        issue21 = IssueFactory(project_id=project2.id, title=u'Civic Issue 2.1')
         db.session.flush()
 
         response = self.app.get('/api/organizations/%s/issues' % organization.name)
@@ -774,7 +775,7 @@ class ApiTest(unittest.TestCase):
         response = json.loads(response.data)
         self.assertEqual(response['total'], 3)
 
-        self.assertEqual(response["objects"][0]["title"], "Civic Issue 1.1")
+        self.assertEqual(response['objects'][0]['title'], u'Civic Issue 1.1')
 
     def test_cascading_delete(self):
         '''
@@ -835,11 +836,11 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(len(lab), 0)
 
     def test_story_query_filter(self):
-        org = OrganizationFactory(type="Brigade")
-        another_org = OrganizationFactory(type="Code for All")
+        org = OrganizationFactory(type=u'Brigade')
+        another_org = OrganizationFactory(type=u'Code for All')
 
-        awesome_story = StoryFactory(title="Awesome story")
-        sad_story = StoryFactory(title="Sad story", type="a video")
+        awesome_story = StoryFactory(title=u'Awesome story')
+        sad_story = StoryFactory(title=u'Sad story', type=u'a video')
 
         awesome_story.organization = org
         sad_story.organization = another_org
@@ -856,28 +857,28 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Awesome story")
+        self.assertEqual(response['objects'][0]['title'], u'Awesome story')
 
         # Filter by type should return only 1
         response = self.app.get('/api/stories?type=video')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Sad story")
+        self.assertEqual(response['objects'][0]['title'], u'Sad story')
 
         # Filter by deep searching organization type should return 1
         response = self.app.get('/api/stories?organization_type=brigade')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Awesome story")
+        self.assertEqual(response['objects'][0]['title'], u'Awesome story')
 
 
     def test_events_query_filter(self):
-        org = OrganizationFactory(type="Brigade")
-        another_org = OrganizationFactory(type="Code for All")
-        awesome_event = EventFactory(name="Awesome event")
-        sad_event = EventFactory(name="Sad event", description="sad stuff will happen")
+        org = OrganizationFactory(type=u'Brigade')
+        another_org = OrganizationFactory(type=u'Code for All')
+        awesome_event = EventFactory(name=u'Awesome event')
+        sad_event = EventFactory(name=u'Sad event', description=u'sad stuff will happen')
 
         awesome_event.organization = org
         sad_event.organization = another_org
@@ -894,30 +895,30 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['name'], "Awesome event")
+        self.assertEqual(response['objects'][0]['name'], u'Awesome event')
 
         # Filter by description should return only 1
         response = self.app.get('/api/events?description=sad%20stuff')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['name'], "Sad event")
+        self.assertEqual(response['objects'][0]['name'], u'Sad event')
 
         # Filter by deep searching organization type should return 1
         response = self.app.get('/api/events?organization_type=brigade')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['name'], "Awesome event")
+        self.assertEqual(response['objects'][0]['name'], u'Awesome event')
 
 
     def test_issues_query_filter(self):
-        org1 = OrganizationFactory(name="Code for Africa", type="Code for All")
-        org2 = OrganizationFactory(name="Code for San Francisco", type="Brigade")
-        proj = ProjectFactory(type="web", organization_name="Code for Africa")
-        another_proj = ProjectFactory(type="mobile", organization_name="Code for San Francisco")
-        awesome_issue = IssueFactory(title="Awesome issue")
-        sad_issue = IssueFactory(title="Sad issue", body="learning swift is sad")
+        org1 = OrganizationFactory(name=u'Code for Africa', type=u'Code for All')
+        org2 = OrganizationFactory(name=u'Code for San Francisco', type=u'Brigade')
+        proj = ProjectFactory(type=u'web', organization_name=u'Code for Africa')
+        another_proj = ProjectFactory(type=u'mobile', organization_name=u'Code for San Francisco')
+        awesome_issue = IssueFactory(title=u'Awesome issue')
+        sad_issue = IssueFactory(title=u'Sad issue', body=u'learning swift is sad')
         db.session.commit()
 
         awesome_issue.project_id = proj.id
@@ -935,36 +936,37 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Awesome issue")
+        self.assertEqual(response['objects'][0]['title'], u'Awesome issue')
 
         # Filter by type should return only 1
         response = self.app.get('/api/issues?body=swift')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Sad issue")
+        self.assertEqual(response['objects'][0]['title'], u'Sad issue')
 
         # Filter by deep searching project type should return 1
         response = self.app.get('/api/issues?project_type=web')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Awesome issue")
+        self.assertEqual(response['objects'][0]['title'], u'Awesome issue')
 
         # Filter by deep searching organization type should return 1
         response = self.app.get('/api/issues?organization_type=Code for All')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Awesome issue")
+        self.assertEqual(response['objects'][0]['title'], u'Awesome issue')
 
         # Filter by deep searching organization type should return 1
         response = self.app.get('/api/issues?organization_type=Brigade')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
         self.assertEqual(response['total'], 1)
-        self.assertEqual(response['objects'][0]['title'], "Sad issue")
+        self.assertEqual(response['objects'][0]['title'], u'Sad issue')
 
+    #:::here
     def test_org_dont_show_issues(self):
         ''' Test that calls to /organizations dont return project issues '''
         from factories import OrganizationFactory, ProjectFactory, IssueFactory
@@ -984,31 +986,31 @@ class ApiTest(unittest.TestCase):
         ''' Test that labels get deleted when their parent
             issue, project, and org is deleted
         '''
-        organization = OrganizationFactory(name="TEST ORG")
-        project = ProjectFactory(organization_name="TEST ORG", name="TEST PROJECT")
-        issue = IssueFactory(title="TEST ISSUE", project_id=1)
+        organization = OrganizationFactory(name=u'TEST ORG')
+        project = ProjectFactory(organization_name=u'TEST ORG', name=u'TEST PROJECT')
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=1)
         label = LabelFactory(issue_id=1)
         db.session.commit()
 
-        db.session.execute("DELETE FROM issue")
+        db.session.execute('DELETE FROM issue')
         db.session.commit()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
-        issue = IssueFactory(title="TEST ISSUE", project_id=1)
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=1)
         label = LabelFactory(issue_id=2)
         db.session.commit()
-        db.session.execute("DELETE FROM project")
+        db.session.execute('DELETE FROM project')
         db.session.commit()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
-        project = ProjectFactory(organization_name="TEST ORG", name="TEST PROJECT")
-        issue = IssueFactory(title="TEST ISSUE", project_id=2)
+        project = ProjectFactory(organization_name=u'TEST ORG', name=u'TEST PROJECT')
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=2)
         label = LabelFactory(issue_id=3)
         db.session.commit()
 
-        db.session.execute("DELETE FROM organization")
+        db.session.execute('DELETE FROM organization')
         db.session.commit()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
