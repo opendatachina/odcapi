@@ -776,7 +776,6 @@ class ApiTest(unittest.TestCase):
 
         self.assertEqual(response['objects'][0]['title'], u'Civic Issue 1.1')
 
-    #:::here
     def test_cascading_delete(self):
         '''
         Test that when an organization is deleted, all of its projects, issues, stories, events are deleted
@@ -981,7 +980,6 @@ class ApiTest(unittest.TestCase):
                 self.assertFalse('issues' in org['current_projects'][0])
                 break
 
-    #:::here
     def test_issue_cascading_deletes(self):
         ''' Test that labels get deleted when their parent
             issue, project, and org is deleted
@@ -1031,6 +1029,50 @@ class ApiTest(unittest.TestCase):
         db.session.flush()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
+
+    def test_project_cascading_deletes(self):
+        ''' Test that issues get deleted when their parent
+            project and org is deleted
+        '''
+
+        # set up test objects and delete a project
+        organization = OrganizationFactory(name=u'TEST ORG')
+        db.session.flush()
+
+        project = ProjectFactory(organization_name=organization.name, name=u'TEST PROJECT')
+        db.session.flush()
+
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=project.id)
+        another_issue = IssueFactory(title=u'ANOTHER TEST ISSUE', project_id=project.id)
+        a_third_issue = IssueFactory(title=u'A THIRD TEST ISSUE', project_id=project.id)
+        db.session.flush()
+
+        # make sure the issues are in the db
+        issues = db.session.query(Issue).all()
+        self.assertTrue(len(issues) == 3)
+
+        db.session.execute('DELETE FROM project')
+        db.session.flush()
+        issues = db.session.query(Issue).all()
+        self.assertFalse(len(issues))
+
+        # delete an organization
+        project = ProjectFactory(organization_name=organization.name, name=u'TEST PROJECT')
+        db.session.flush()
+
+        issue = IssueFactory(title=u'TEST ISSUE', project_id=project.id)
+        another_issue = IssueFactory(title=u'ANOTHER TEST ISSUE', project_id=project.id)
+        a_third_issue = IssueFactory(title=u'A THIRD TEST ISSUE', project_id=project.id)
+        db.session.flush()
+
+        # make sure the issues are in the db
+        issues = db.session.query(Issue).all()
+        self.assertTrue(len(issues) == 3)
+
+        db.session.execute('DELETE FROM organization')
+        db.session.flush()
+        issues = db.session.query(Issue).all()
+        self.assertFalse(len(issues))
 
 
 if __name__ == '__main__':
