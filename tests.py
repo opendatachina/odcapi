@@ -32,7 +32,7 @@ class ApiTest(unittest.TestCase):
         ProjectFactory(organization_name=organization.name, name=u'Project 2', last_updated='Tue, 01 Jan 2011 00:00:00 GMT')
         ProjectFactory(organization_name=organization.name, name=u'Non Github Project', last_updated='Wed, 01 Jan 2013 00:00:00', github_details=None)
         ProjectFactory(organization_name=organization.name, name=u'Project 3', last_updated='Thu, 01 Jan 2014 00:00:00 GMT')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code-for-San-Francisco')
         response = json.loads(response.data)
@@ -50,7 +50,7 @@ class ApiTest(unittest.TestCase):
         ProjectFactory(name=u'Project 2', last_updated='Tue, 01 Jan 2011 00:00:00 GMT')
         ProjectFactory(name=u'Non Github Project', last_updated='Wed, 01 Jan 2013 00:00:00', github_details=None)
         ProjectFactory(name=u'Project 3', last_updated='Thu, 01 Jan 2014 00:00:00 GMT')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/projects')
         response = json.loads(response.data)
@@ -70,7 +70,7 @@ class ApiTest(unittest.TestCase):
         ProjectFactory(organization_name=organization.name, name=u'Project 2', last_updated='Tue, 01 Jan 2011 00:00:00 GMT')
         ProjectFactory(organization_name=organization.name, name=u'Non Github Project', last_updated='Wed, 01 Jan 2013 00:00:00', github_details=None)
         ProjectFactory(organization_name=organization.name, name=u'Project 3', last_updated='Thu, 01 Jan 2014 00:00:00 GMT')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code-for-San-Francisco/projects')
         response = json.loads(response.data)
@@ -94,7 +94,7 @@ class ApiTest(unittest.TestCase):
         EventFactory(organization_name=organization.name, name=u'New Years', start_time_notz=datetime.now() + timedelta(7))
         EventFactory(organization_name=organization.name, name=u'MLK Day', start_time_notz=datetime.now() + timedelta(25))
         EventFactory(organization_name=organization.name, name=u'Cesar Chavez Day', start_time_notz=datetime.now() + timedelta(37))
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Collective%20of%20Ericas')
         response_json = json.loads(response.data)
@@ -139,7 +139,7 @@ class ApiTest(unittest.TestCase):
         EventFactory(organization_name=organization.name, name=u'Event Three', start_time_notz=datetime.now() + timedelta(30))
         EventFactory(organization_name=organization.name, name=u'Event Six', start_time_notz=datetime.now() + timedelta(300))
         EventFactory(organization_name=organization.name, name=u'Event Nine', start_time_notz=datetime.now() + timedelta(3000))
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/events/upcoming_events')
         response_json = json.loads(response.data)
@@ -184,7 +184,7 @@ class ApiTest(unittest.TestCase):
         EventFactory(organization_name=organization.name, name=u'Event Three', start_time_notz=datetime.now() + timedelta(30))
         EventFactory(organization_name=organization.name, name=u'Event Six', start_time_notz=datetime.now() + timedelta(300))
         EventFactory(organization_name=organization.name, name=u'Event Nine', start_time_notz=datetime.now() + timedelta(3000))
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/events/upcoming_events?organization_type=Code for All')
         response_json = json.loads(response.data)
@@ -223,7 +223,7 @@ class ApiTest(unittest.TestCase):
         # Create multiple events, some in the future, one in the past
         EventFactory(organization_name=organization.name, name=u'Past Event', start_time_notz=datetime.now() - timedelta(3000))
         EventFactory(organization_name=organization.name, name=u'Event Three', start_time_notz=datetime.now() + timedelta(30))
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/events/past_events?organization_type=Code for All')
         response_json = json.loads(response.data)
@@ -239,7 +239,7 @@ class ApiTest(unittest.TestCase):
 
         StoryFactory(organization_name=u'Collective of Ericas', title=u'First Story')
         StoryFactory(organization_name=u'Collective of Ericas', title=u'Second Story')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Collective%20of%20Ericas')
         response_json = json.loads(response.data)
@@ -248,7 +248,7 @@ class ApiTest(unittest.TestCase):
 
     def test_headers(self):
         OrganizationFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations')
         assert response.headers['Access-Control-Allow-Origin']  == '*'
@@ -270,7 +270,7 @@ class ApiTest(unittest.TestCase):
 
     def test_brigade_name_request(self):
         OrganizationFactory(name=u'Code for San Francisco')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code for San Francisco')
         response = json.loads(response.data)
@@ -289,10 +289,11 @@ class ApiTest(unittest.TestCase):
 
     def test_organizations(self):
         OrganizationFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations')
         response = json.loads(response.data)
+
         assert isinstance(response, dict)
         assert isinstance(response['pages'], dict)
         assert isinstance(response['total'], int)
@@ -309,12 +310,12 @@ class ApiTest(unittest.TestCase):
         assert isinstance(response['objects'][0]['current_stories'], list)
         assert isinstance(response['objects'][0]['type'], unicode)
         assert isinstance(response['objects'][0]['website'], unicode)
-        assert isinstance(response['objects'][0]['last_updated'], float)
+        assert isinstance(response['objects'][0]['last_updated'], int)
         assert isinstance(response['objects'][0]['started_on'], unicode)
 
     def test_projects(self):
         ProjectFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/projects')
         response = json.loads(response.data)
@@ -338,7 +339,7 @@ class ApiTest(unittest.TestCase):
         ProjectFactory()
         ProjectFactory()
         ProjectFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/projects?per_page=2')
         response = json.loads(response.data)
@@ -352,7 +353,7 @@ class ApiTest(unittest.TestCase):
     def test_good_orgs_projects(self):
         organization = OrganizationFactory(name=u'Code for America')
         project = ProjectFactory(organization_name=u'Code for America')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America/projects')
         self.assertEqual(response.status_code, 200)
@@ -361,14 +362,14 @@ class ApiTest(unittest.TestCase):
 
     def test_bad_orgs_projects(self):
         ProjectFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Whatever/projects')
         self.assertEqual(response.status_code, 404)
 
     def test_stories(self):
         StoryFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/stories')
         response = json.loads(response.data)
@@ -387,7 +388,7 @@ class ApiTest(unittest.TestCase):
         StoryFactory()
         StoryFactory()
         StoryFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/stories')
         response = json.loads(response.data)
@@ -398,7 +399,7 @@ class ApiTest(unittest.TestCase):
     def test_orgs_stories(self):
         organization = OrganizationFactory(name=u'Code for America')
         story = StoryFactory(organization_name=u'Code for America')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America/stories')
         self.assertEqual(response.status_code, 200)
@@ -409,7 +410,7 @@ class ApiTest(unittest.TestCase):
         organization = OrganizationFactory(name=u'Code for America')
         StoryFactory(organization_name=u'Code for America')
         StoryFactory(organization_name=u'Code for America')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America')
         response = json.loads(response.data)
@@ -421,7 +422,7 @@ class ApiTest(unittest.TestCase):
         StoryFactory(organization_name=u'Code for America')
         StoryFactory(organization_name=u'Code for America')
         StoryFactory(organization_name=u'Code for America')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America/stories')
         response = json.loads(response.data)
@@ -434,7 +435,7 @@ class ApiTest(unittest.TestCase):
         Return all events past/future ordered by oldest to newest
         '''
         EventFactory()
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/events')
         response = json.loads(response.data)
@@ -456,7 +457,7 @@ class ApiTest(unittest.TestCase):
     def test_orgs_events(self):
         organization = OrganizationFactory(name=u'Code for America')
         event = EventFactory(organization_name=u'Code for America')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code for America/events')
         self.assertEqual(response.status_code, 200)
@@ -564,7 +565,7 @@ class ApiTest(unittest.TestCase):
     def test_dashes_in_slugs(self):
         organization = OrganizationFactory(name=u'Code for America')
         event = EventFactory(organization_name=u'Code for America')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/Code-for-America')
         self.assertEqual(response.status_code,200)
@@ -585,7 +586,7 @@ class ApiTest(unittest.TestCase):
         EventFactory(organization_name=organization.name, name=u'Christmas Eve', start_time_notz=datetime.now() - timedelta(1))
         EventFactory(organization_name=organization.name, name=u'New Years', start_time_notz=datetime.now() + timedelta(7))
         EventFactory(organization_name=organization.name, name=u'MLK Day', start_time_notz=datetime.now() + timedelta(25))
-        db.session.flush()
+        db.session.commit()
 
         # Check that future events are returned in the correct order
         response = self.app.get('/api/organizations/International Cat Association/upcoming_events')
@@ -609,7 +610,7 @@ class ApiTest(unittest.TestCase):
         EventFactory(organization_name=organization.name, name=u'Thanksgiving', start_time_notz=datetime.now() - timedelta(30))
         EventFactory(organization_name=organization.name, name=u'Christmas Eve', start_time_notz=datetime.now() - timedelta(1))
         EventFactory(organization_name=organization.name, name=u'New Years', start_time_notz=datetime.now() + timedelta(7))
-        db.session.flush()
+        db.session.commit()
 
         # Check that past events are returned in the correct order
         response = self.app.get('/api/organizations/International Cat Association/past_events')
@@ -672,7 +673,7 @@ class ApiTest(unittest.TestCase):
         issue.labels = [label1]
         issue2.labels = [label2]
 
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/issues/labels/enhancement')
         self.assertEqual(response.status_code, 200)
@@ -767,7 +768,7 @@ class ApiTest(unittest.TestCase):
         issue11 = IssueFactory(project_id=project1.id, title=u'Civic Issue 1.1')
         issue12 = IssueFactory(project_id=project1.id, title=u'Civic Issue 1.2')
         issue21 = IssueFactory(project_id=project2.id, title=u'Civic Issue 2.1')
-        db.session.flush()
+        db.session.commit()
 
         response = self.app.get('/api/organizations/%s/issues' % organization.name)
         self.assertEqual(response.status_code, 200)
@@ -916,12 +917,9 @@ class ApiTest(unittest.TestCase):
         org2 = OrganizationFactory(name=u'Code for San Francisco', type=u'Brigade')
         proj = ProjectFactory(type=u'web', organization_name=u'Code for Africa')
         another_proj = ProjectFactory(type=u'mobile', organization_name=u'Code for San Francisco')
-        awesome_issue = IssueFactory(title=u'Awesome issue')
-        sad_issue = IssueFactory(title=u'Sad issue', body=u'learning swift is sad')
-        db.session.commit()
-
-        awesome_issue.project_id = proj.id
-        sad_issue.project_id = another_proj.id
+        db.session.flush()
+        awesome_issue = IssueFactory(title=u'Awesome issue', project_id=proj.id)
+        sad_issue = IssueFactory(title=u'Sad issue', body=u'learning swift is sad', project_id=another_proj.id)
         db.session.commit()
 
         # Make sure total number of stories is 2
@@ -968,9 +966,13 @@ class ApiTest(unittest.TestCase):
     def test_org_dont_show_issues(self):
         ''' Test that calls to /organizations dont return project issues '''
         from factories import OrganizationFactory, ProjectFactory, IssueFactory
-        OrganizationFactory()
-        ProjectFactory()
-        IssueFactory()
+        organization = OrganizationFactory()
+        db.session.flush()
+
+        project = ProjectFactory(organization_name=organization.name)
+        db.session.flush()
+
+        issue = IssueFactory(project_id=project.id)
         db.session.commit()
 
         response = self.app.get('/api/organizations')
@@ -999,7 +1001,7 @@ class ApiTest(unittest.TestCase):
         db.session.flush()
 
         db.session.execute('DELETE FROM issue')
-        db.session.flush()
+        db.session.commit()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
@@ -1011,7 +1013,7 @@ class ApiTest(unittest.TestCase):
         db.session.flush()
 
         db.session.execute('DELETE FROM project')
-        db.session.flush()
+        db.session.commit()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
@@ -1026,7 +1028,7 @@ class ApiTest(unittest.TestCase):
         db.session.flush()
 
         db.session.execute('DELETE FROM organization')
-        db.session.flush()
+        db.session.commit()
         labels = db.session.query(Label).all()
         self.assertFalse(len(labels))
 
@@ -1045,14 +1047,14 @@ class ApiTest(unittest.TestCase):
         issue = IssueFactory(title=u'TEST ISSUE', project_id=project.id)
         another_issue = IssueFactory(title=u'ANOTHER TEST ISSUE', project_id=project.id)
         a_third_issue = IssueFactory(title=u'A THIRD TEST ISSUE', project_id=project.id)
-        db.session.flush()
+        db.session.commit()
 
         # make sure the issues are in the db
         issues = db.session.query(Issue).all()
         self.assertTrue(len(issues) == 3)
 
         db.session.execute('DELETE FROM project')
-        db.session.flush()
+        db.session.commit()
         issues = db.session.query(Issue).all()
         self.assertFalse(len(issues))
 
@@ -1063,14 +1065,14 @@ class ApiTest(unittest.TestCase):
         issue = IssueFactory(title=u'TEST ISSUE', project_id=project.id)
         another_issue = IssueFactory(title=u'ANOTHER TEST ISSUE', project_id=project.id)
         a_third_issue = IssueFactory(title=u'A THIRD TEST ISSUE', project_id=project.id)
-        db.session.flush()
+        db.session.commit()
 
         # make sure the issues are in the db
         issues = db.session.query(Issue).all()
         self.assertTrue(len(issues) == 3)
 
         db.session.execute('DELETE FROM organization')
-        db.session.flush()
+        db.session.commit()
         issues = db.session.query(Issue).all()
         self.assertFalse(len(issues))
 
