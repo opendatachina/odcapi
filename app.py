@@ -227,7 +227,7 @@ class Story(db.Model):
 
     # Relationships
     organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan') #child
-    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
+    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, title=None, link=None, type=None, organization_name=None):
         self.title = title
@@ -275,7 +275,7 @@ class Project(db.Model):
 
     # Relationships
     organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan') #child
-    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
+    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'), nullable=False)
 
     # Issue has cascade so issues are deleted with their parent projects
     issues = db.relationship('Issue', cascade='save-update, delete') #parent
@@ -333,7 +333,7 @@ class Issue(db.Model):
 
     # Relationships
     project = db.relationship('Project', single_parent=True, cascade='all, delete-orphan') #child
-    project_id = db.Column(db.Integer(), db.ForeignKey('project.id', ondelete='CASCADE'))
+    project_id = db.Column(db.Integer(), db.ForeignKey('project.id', ondelete='CASCADE'), nullable=False, index=True)
 
     labels = db.relationship('Label', cascade='save-update, delete') #parent
 
@@ -415,7 +415,7 @@ class Event(db.Model):
 
     # Relationships
     organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan') #child
-    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
+    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, name, event_url, start_time_notz, created_at, utc_offset,
                  organization_name, location=None, end_time_notz=None, description=None):
