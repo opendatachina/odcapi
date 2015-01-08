@@ -1074,6 +1074,20 @@ class ApiTest(unittest.TestCase):
         issues = db.session.query(Issue).all()
         self.assertFalse(len(issues))
 
+    def test_create_child_without_parent(self):
+        ''' Test that children created without parents
+            are deleted(?)
+        '''
+
+        self.assertTrue(True)
+
+    def test_set_childs_parent_association_null(self):
+        ''' Test that when a child's parent association
+            is deleted, that the child is destroyed
+        '''
+
+        self.assertTrue(True)
+
 
 if __name__ == '__main__':
     unittest.main()
