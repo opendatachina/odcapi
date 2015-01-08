@@ -97,9 +97,9 @@ class Organization(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    events = db.relationship('Event', cascade='save-update, delete')
-    stories = db.relationship('Story', cascade='save-update, delete')
-    projects = db.relationship('Project', cascade='save-update, delete')
+    events = db.relationship('Event', cascade='save-update, delete') #parent
+    stories = db.relationship('Story', cascade='save-update, delete') #parent
+    projects = db.relationship('Project', cascade='save-update, delete') #parent
 
     def __init__(self, name, website=None, events_url=None,
                  rss=None, projects_list_url=None, type=None, city=None, latitude=None, longitude=None):
@@ -226,7 +226,7 @@ class Story(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan')
+    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan') #child
     organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
 
     def __init__(self, title=None, link=None, type=None, organization_name=None):
@@ -274,11 +274,11 @@ class Project(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan')
+    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan') #child
     organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
 
     # Issue has cascade so issues are deleted with their parent projects
-    issues = db.relationship('Issue', cascade='save-update, delete')
+    issues = db.relationship('Issue', cascade='save-update, delete') #parent
 
     def __init__(self, name, code_url=None, link_url=None,
                  description=None, type=None, categories=None,
@@ -332,10 +332,10 @@ class Issue(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    project = db.relationship('Project', single_parent=True, cascade='all, delete-orphan')
+    project = db.relationship('Project', single_parent=True, cascade='all, delete-orphan') #child
     project_id = db.Column(db.Integer(), db.ForeignKey('project.id', ondelete='CASCADE'))
 
-    labels = db.relationship('Label', cascade='save-update, delete')
+    labels = db.relationship('Label', cascade='save-update, delete') #parent
 
     def __init__(self, title, project_id=None, html_url=None, labels=None, body=None):
         self.title = title
@@ -377,7 +377,7 @@ class Label(db.Model):
     color = db.Column(db.Unicode())
     url = db.Column(db.Unicode())
 
-    issue = db.relationship('Issue', single_parent=True, cascade='all, delete-orphan')
+    issue = db.relationship('Issue', single_parent=True, cascade='all, delete-orphan') #child
     issue_id = db.Column(db.Integer, db.ForeignKey('issue.id', ondelete='CASCADE'), nullable=False, index=True)
 
     def __init__(self, name, color, url, issue_id=None):
@@ -414,7 +414,7 @@ class Event(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan')
+    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan') #child
     organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
 
     def __init__(self, name, event_url, start_time_notz, created_at, utc_offset,
