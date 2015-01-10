@@ -4,7 +4,7 @@
 import unittest, requests, json, os
 from datetime import datetime, timedelta
 from urlparse import urlparse
-
+from sqlalchemy.exc import IntegrityError
 from app import app, db, Organization, Project, Event, Story, Issue, Label
 from factories import OrganizationFactory, ProjectFactory, EventFactory, StoryFactory, IssueFactory, LabelFactory
 
@@ -1077,18 +1077,126 @@ class ApiTest(unittest.TestCase):
         self.assertFalse(len(issues))
 
     def test_create_child_without_parent(self):
-        ''' Test that children created without parents
-            are deleted(?)
+        ''' Test that children created without parents cannot be committed to the database
         '''
+        test_passed = False
+        project = ProjectFactory(organization_name=None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
 
-        self.assertTrue(True)
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        story = StoryFactory(organization_name=None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        event = EventFactory(organization_name=None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        issue = IssueFactory(project_id=None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        label = LabelFactory(issue_id=None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+
 
     def test_set_childs_parent_association_null(self):
-        ''' Test that when a child's parent association
-            is deleted, that the child is destroyed
+        ''' Test that a child's parent association cannot be deleted
         '''
 
-        self.assertTrue(True)
+        test_passed = False
+        project = ProjectFactory()
+        db.session.commit()
+        setattr(project, 'organization_name', None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        story = StoryFactory()
+        db.session.commit()
+        setattr(story, 'organization_name', None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        event = EventFactory()
+        db.session.commit()
+        setattr(event, 'organization_name', None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        project = ProjectFactory()
+        db.session.flush()
+        issue = IssueFactory(project_id=project.id)
+        db.session.commit()
+        setattr(issue, 'project_id', None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
+        db.session.rollback()
+
+        test_passed = False
+        project = ProjectFactory()
+        db.session.flush()
+        issue = IssueFactory(project_id=project.id)
+        db.session.flush()
+        label = LabelFactory(issue_id=issue.id)
+        db.session.commit()
+        setattr(label, 'issue_id', None)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            test_passed = True
+
+        self.assertTrue(test_passed)
 
 
 if __name__ == '__main__':
