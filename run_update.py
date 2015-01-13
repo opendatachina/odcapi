@@ -475,7 +475,7 @@ def get_issues(org_name):
 
     # Populate issues for each project
     for project in projects:
-        # Mark this projects issues for deletion
+        # Mark this project's issues for deletion
         db.session.execute(db.update(Issue, values={'keep': False}).where(Issue.project_id == project.id))
 
         # Get github issues api url
@@ -566,7 +566,7 @@ def save_organization_info(session, org_dict):
     filter = Organization.name == org_dict['name']
     existing_org = session.query(Organization).filter(filter).first()
 
-    # If this is a new organization, save and return it.
+    # If this is a new organization, save and return it. The keep parameter is True by default.
     if not existing_org:
         new_organization = Organization(**org_dict)
         session.add(new_organization)
@@ -742,86 +742,86 @@ def main(org_name=None, org_sources=None):
     # Iterate over organizations and projects, saving them to db.session.
     for org_info in orgs_info:
 
-      if not is_safe_name(org_info['name']):
-          error_dict = {
-            "error" : unicode('ValueError: Bad organization name: "%s"' % org_info['name']),
-            "time" : datetime.now()
-          }
-          new_error = Error(**error_dict)
-          db.session.add(new_error)
-          db.session.commit()
-          continue
+        if not is_safe_name(org_info['name']):
+            error_dict = {
+                "error" : unicode('ValueError: Bad organization name: "%s"' % org_info['name']),
+                "time" : datetime.now()
+            }
+            new_error = Error(**error_dict)
+            db.session.add(new_error)
+            db.session.commit()
+            continue
 
-      try:
-        filter = Organization.name == org_info['name']
-        existing_org = db.session.query(Organization).filter(filter).first()
-        organization_names.add(org_info['name'])
+        try:
+            filter = Organization.name == org_info['name']
+            existing_org = db.session.query(Organization).filter(filter).first()
+            organization_names.add(org_info['name'])
 
-        # Mark everything in this organization for deletion at first.
-        db.session.execute(db.update(Event, values={'keep': False}).where(Event.organization_name == org_info['name']))
-        db.session.execute(db.update(Story, values={'keep': False}).where(Story.organization_name == org_info['name']))
-        db.session.execute(db.update(Project, values={'keep': False}).where(Project.organization_name == org_info['name']))
-        db.session.execute(db.update(Organization, values={'keep': False}).where(Organization.name == org_info['name']))
+            # Mark everything in this organization for deletion at first.
+            db.session.execute(db.update(Event, values={'keep': False}).where(Event.organization_name == org_info['name']))
+            db.session.execute(db.update(Story, values={'keep': False}).where(Story.organization_name == org_info['name']))
+            db.session.execute(db.update(Project, values={'keep': False}).where(Project.organization_name == org_info['name']))
+            db.session.execute(db.update(Organization, values={'keep': False}).where(Organization.name == org_info['name']))
 
-        # Empty lat longs are okay.
-        if 'latitude' in org_info:
-            if not org_info['latitude']:
-                org_info['latitude'] = None
-        if 'longitude' in org_info:
-            if not org_info['longitude']:
-                org_info['longitude'] = None
+            # Empty lat longs are okay.
+            if 'latitude' in org_info:
+                if not org_info['latitude']:
+                    org_info['latitude'] = None
+            if 'longitude' in org_info:
+                if not org_info['longitude']:
+                    org_info['longitude'] = None
 
-        organization = save_organization_info(db.session, org_info)
-        organization_names.add(organization.name)
+            organization = save_organization_info(db.session, org_info)
+            organization_names.add(organization.name)
 
-        if organization.rss or organization.website:
-            logging.info("Gathering all of %s's stories." % organization.name)
-            stories = get_stories(organization)
-            if stories:
-                for story_info in stories:
-                    save_story_info(db.session, story_info)
+            if organization.rss or organization.website:
+                logging.info("Gathering all of %s's stories." % organization.name)
+                stories = get_stories(organization)
+                if stories:
+                    for story_info in stories:
+                        save_story_info(db.session, story_info)
 
-        if organization.projects_list_url:
-            logging.info("Gathering all of %s's projects." % organization.name)
-            projects = get_projects(organization)
-            for proj_info in projects:
-                save_project_info(db.session, proj_info)
+            if organization.projects_list_url:
+                logging.info("Gathering all of %s's projects." % organization.name)
+                projects = get_projects(organization)
+                for proj_info in projects:
+                    save_project_info(db.session, proj_info)
 
-        if organization.events_url:
-            if not meetup_key:
-                logging.error("No Meetup.com key set.")
-            if 'meetup.com' not in organization.events_url:
-                logging.error("Only Meetup.com events work right now.")
-            else:
-                logging.info("Gathering all of %s's events." % organization.name)
-                identifier = get_event_group_identifier(organization.events_url)
-                if identifier:
-                    for event in get_meetup_events(organization, identifier):
-                        save_event_info(db.session, event)
+            if organization.events_url:
+                if not meetup_key:
+                    logging.error("No Meetup.com key set.")
+                if 'meetup.com' not in organization.events_url:
+                    logging.error("Only Meetup.com events work right now.")
                 else:
-                    logging.error("%s does not have a valid events url" % organization.name)
+                    logging.info("Gathering all of %s's events." % organization.name)
+                    identifier = get_event_group_identifier(organization.events_url)
+                    if identifier:
+                        for event in get_meetup_events(organization, identifier):
+                            save_event_info(db.session, event)
+                    else:
+                        logging.error("%s does not have a valid events url" % organization.name)
 
-        # Get issues for all of the projects
-        logging.info("Gathering all of %s's open GitHub issues." % organization.name)
-        issues = get_issues(organization.name)
-        for issue in issues:
-            save_issue(db.session, issue)
-            save_labels(db.session, issue)
+            # Get issues for all of the projects
+            logging.info("Gathering all of %s's open GitHub issues." % organization.name)
+            issues = get_issues(organization.name)
+            for issue in issues:
+                save_issue(db.session, issue)
+                save_labels(db.session, issue)
 
-        # Remove everything marked for deletion.
-        db.session.query(Event).filter(not Event.keep).delete()
-        db.session.query(Story).filter(not Story.keep).delete()
-        db.session.query(Project).filter(not Project.keep).delete()
-        db.session.query(Issue).filter(Issue.keep == False).delete()
-        db.session.query(Organization).filter(not Organization.keep).delete()
+            # Remove everything marked for deletion.
+            db.session.query(Event).filter(not Event.keep).delete()
+            db.session.query(Story).filter(not Story.keep).delete()
+            db.session.query(Project).filter(not Project.keep).delete()
+            db.session.query(Issue).filter(Issue.keep == False).delete()
+            db.session.query(Organization).filter(not Organization.keep).delete()
 
-      except:
-        # Raise the error, get out of main(), and don't commit the transaction.
-        raise
+        except:
+            # Raise the error, get out of main(), and don't commit the transaction.
+            raise
 
-      else:
-        # Commit and move on to the next organization.
-        db.session.commit()
+        else:
+            # Commit and move on to the next organization.
+            db.session.commit()
 
     # Stop right here if an org name was specified.
     if org_name:
