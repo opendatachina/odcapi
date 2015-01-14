@@ -657,6 +657,7 @@ class RunUpdateTestCase(unittest.TestCase):
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
+            self.assertTrue(organization.keep)
 
 
         # reset with just two projects
@@ -665,6 +666,7 @@ class RunUpdateTestCase(unittest.TestCase):
         with HTTMock(self.response_content):
             partial_orgs_list = run_update.get_organizations(test_sources)
 
+        # save details about the organization(s) and their children who will be orphaned
         orphaned_org_names = list(set([item['name'] for item in full_orgs_list]) - set([item['name'] for item in partial_orgs_list]))
         orphaned_issue_ids = []
         orphaned_label_ids = []
@@ -687,7 +689,7 @@ class RunUpdateTestCase(unittest.TestCase):
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
-            #self.assertTrue(organization.keep)
+            self.assertTrue(organization.keep)
 
         # confirm that the orphaned organization and its children are no longer in the database
         for org_name_check in orphaned_org_names:
