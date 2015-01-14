@@ -37,7 +37,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
     # overwrite urllib2.urlopen to return our mock response
     def mock_rss_response(self):
-        print "++++ mock_rss_response ++++"
         import urllib2
 
         rss_file=open('blog.xml')
@@ -90,14 +89,12 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, events_content)
 
         elif url.geturl() == 'http://www.codeforamerica.org/blog/feed/' or match(r'http:\/\/.+\.rss', url.geturl()):
-            print "++++ getting blog.xml from within response_content!"
             stories_file=open('blog.xml')
             stories_content = stories_file.read()
             stories_file.close()
             return response(200, stories_content)
 
         elif url.geturl() == 'http://www.codeforamerica.org/blog/another/feed/':
-            print "++++ getting blog_another.xml from within response_content!"
             stories_file=open('blog_another.xml')
             stories_content = stories_file.read()
             stories_file.close()
@@ -109,6 +106,9 @@ class RunUpdateTestCase(unittest.TestCase):
     def test_import(self):
         ''' Add one sample organization with two projects and issues, verify that it comes back.
         '''
+
+        self.mock_rss_response()
+
         with HTTMock(self.response_content):
             import run_update
             run_update.main(org_sources="test_org_sources.csv")
@@ -459,6 +459,7 @@ class RunUpdateTestCase(unittest.TestCase):
             self.assertEqual(projects[0]['name'], "Hack Task Aggregator")
             self.assertEqual(projects[0]['description'], 'Web application to aggregate tasks across projects that are identified for "hacking".')
 
+    # :TODO: fails if you run it solo
     def test_non_github_projects(self):
         ''' Test that non github and non code projects get last_updated timestamps.
         '''
@@ -563,6 +564,8 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Project
         import run_update
 
+        self.mock_rss_response()
+
         with HTTMock(self.response_content):
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
             self.db.session.query(Project).update({"last_updated":None})
@@ -577,6 +580,8 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Label
         import run_update
         
+        self.mock_rss_response()
+
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
             run_update.main(org_sources="test_org_sources.csv")
@@ -590,6 +595,8 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         from app import Label
         import run_update
+
+        self.mock_rss_response()
 
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
@@ -609,6 +616,8 @@ class RunUpdateTestCase(unittest.TestCase):
         import warnings
 
         warnings.filterwarnings('error')
+
+        self.mock_rss_response()
 
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
@@ -691,6 +700,7 @@ class RunUpdateTestCase(unittest.TestCase):
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNone(organization)
 
+        # reset to three projects
         self.project_count = 3
 
 
