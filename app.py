@@ -81,10 +81,6 @@ class JsonType(Mutable, types.TypeDecorator):
 class Organization(db.Model):
     """
         Brigades and other civic tech organizations
-
-        @api {get} /organization/:id Request organization information
-        @apiGroup Organizations
-        @apiParam {Number} per_page=10 The number of features to return on each page.
     """
     #Columns
     name = db.Column(db.Unicode(), primary_key=True)
@@ -570,8 +566,14 @@ def get_query_params(args):
 @app.route('/api/organizations')
 @app.route('/api/organizations/<name>')
 def get_organizations(name=None):
-    ''' Regular response option for organizations.
-    '''
+    """ Regular response option for organizations.
+
+        @api {get} /organization/:id Request organization information
+        @apiGroup Organizations
+        @apiParam {Number} per_page=10 The number of features to return on each page.
+        @apiParam {String} name Filter on the name the feature.
+        @apiParam {String} type Will return organizations of that type, such as Brigade or Code for All
+    """
 
     filters = request.args
     filters, querystring = get_query_params(request.args)
