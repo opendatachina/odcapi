@@ -35,8 +35,12 @@ class RunUpdateTestCase(unittest.TestCase):
         self.db.session.close()
         self.db.drop_all()
 
-    # overwrite urllib2.urlopen to return our mock response
-    def mock_rss_response(self):
+    def setup_mock_rss_response(self):
+        ''' This overwrites urllib2.urlopen to return a mock response, which stops
+            get_first_working_feed_link() in feeds.py from pulling data from the
+            internet
+        '''
+
         import urllib2
 
         rss_file=open('blog.xml')
@@ -107,7 +111,7 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' Add one sample organization with two projects and issues, verify that it comes back.
         '''
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             import run_update
@@ -154,7 +158,7 @@ class RunUpdateTestCase(unittest.TestCase):
         old_issue = IssueFactory(title=u'Old Issue', project_id=1)
         self.db.session.flush()
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             import run_update
@@ -288,7 +292,7 @@ class RunUpdateTestCase(unittest.TestCase):
 
         logging.error = Mock()
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(response_content):
             import run_update
@@ -370,7 +374,7 @@ class RunUpdateTestCase(unittest.TestCase):
                 raise Exception('Asked for unknown URL ' + url.geturl())
 
         logging.error = Mock()
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(response_content):
             import run_update
@@ -382,7 +386,7 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         Test that two most recent blog posts are in the db.
         '''
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         from factories import OrganizationFactory
         organization = OrganizationFactory(name=u'Code for America')
@@ -564,7 +568,7 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Project
         import run_update
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
@@ -580,7 +584,7 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Label
         import run_update
         
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
@@ -596,7 +600,7 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Label
         import run_update
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
@@ -617,7 +621,7 @@ class RunUpdateTestCase(unittest.TestCase):
 
         warnings.filterwarnings('error')
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
@@ -633,7 +637,7 @@ class RunUpdateTestCase(unittest.TestCase):
         self.project_count = 3
         full_orgs_list = []
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             # get the orgs list for comparison
