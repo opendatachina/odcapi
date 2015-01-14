@@ -79,9 +79,13 @@ class JsonType(Mutable, types.TypeDecorator):
 # -------------------
 
 class Organization(db.Model):
-    '''
+    """
         Brigades and other civic tech organizations
-    '''
+
+        @api {get} /organization/:id Request organization information
+        @apiGroup Organizations
+        @apiParam {Number} per_page=10 The number of features to return on each page.
+    """
     #Columns
     name = db.Column(db.Unicode(), primary_key=True)
     website = db.Column(db.Unicode())
