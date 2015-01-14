@@ -15,6 +15,9 @@ class FakeResponse:
 
 class RunUpdateTestCase(unittest.TestCase):
 
+    # change to modify the number of mock organizations returned
+    project_count = 3
+
     def setUp(self):
         os.environ['DATABASE_URL'] = 'postgres://postgres@localhost/civic_json_worker_test'
         os.environ['SECRET_KEY'] = '123456'
@@ -32,7 +35,9 @@ class RunUpdateTestCase(unittest.TestCase):
         self.db.session.close()
         self.db.drop_all()
 
+    # overwrite urllib2.urlopen to return our mock response
     def mock_rss_response(self):
+        print "++++ mock_rss_response ++++"
         import urllib2
 
         rss_file=open('blog.xml')
@@ -45,7 +50,7 @@ class RunUpdateTestCase(unittest.TestCase):
     def get_raw_organization_list(self, count=3):
         if type(count) is not int:
             count = 3
-        lines = [u'''name,website,events_url,rss,projects_list_url'''.encode('utf8'), u'''Cöde for Ameriça,http://codeforamerica.org,http://www.meetup.com/events/Code-For-Charlotte/,http://www.codeforamerica.org/blog/feed/,http://example.com/cfa-projects.csv'''.encode('utf8'), u'''Code for America (2),,,,https://github.com/codeforamerica'''.encode('utf8'), u'''Code for America (3),,,,https://www.github.com/orgs/codeforamerica'''.encode('utf8')]
+        lines = [u'''name,website,events_url,rss,projects_list_url'''.encode('utf8'), u'''Cöde for Ameriça,http://codeforamerica.org,http://www.meetup.com/events/Code-For-Charlotte/,http://www.codeforamerica.org/blog/feed/,http://example.com/cfa-projects.csv'''.encode('utf8'), u'''Code for America (2),,,,https://github.com/codeforamerica'''.encode('utf8'), u'''Code for America (3),,,http://www.codeforamerica.org/blog/another/feed/,https://www.github.com/orgs/codeforamerica'''.encode('utf8')]
         return '\n'.join(lines[0:count + 1])
 
     def response_content(self, url, request):
@@ -55,7 +60,7 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, '''name,description,link_url,code_url,type,categories\n,"Thing for ""stuff"".",,https://github.com/codeforamerica/cityvoice,web service,"community engagement, housing"\nSouthBendVoices,,,https://github.com/codeforamerica/cityvoice,,''')
 
         elif "docs.google.com" in url:
-            return response(200, self.get_raw_organization_list())
+            return response(200, self.get_raw_organization_list(self.project_count))
 
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
             return response(200, '''{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
@@ -85,7 +90,15 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, events_content)
 
         elif url.geturl() == 'http://www.codeforamerica.org/blog/feed/' or match(r'http:\/\/.+\.rss', url.geturl()):
+            print "++++ getting blog.xml from within response_content!"
             stories_file=open('blog.xml')
+            stories_content = stories_file.read()
+            stories_file.close()
+            return response(200, stories_content)
+
+        elif url.geturl() == 'http://www.codeforamerica.org/blog/another/feed/':
+            print "++++ getting blog_another.xml from within response_content!"
+            stories_file=open('blog_another.xml')
             stories_content = stories_file.read()
             stories_file.close()
             return response(200, stories_content)
@@ -555,6 +568,8 @@ class RunUpdateTestCase(unittest.TestCase):
             self.db.session.query(Project).update({"last_updated":None})
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
 
+        # :TODO: no assertion?
+
     def test_orphan_labels(self):
         ''' We keep getting orphan labels,
             run_update twice and check for orphan labels.
@@ -597,6 +612,87 @@ class RunUpdateTestCase(unittest.TestCase):
 
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
+
+    def test_orphaned_project_deleted(self):
+        ''' Affirm that a project is deleted when it's no longer included
+            in the returned csv
+        '''
+        from app import Organization, Project, Event, Story, Issue, Label
+        import run_update
+
+        test_sources = "test_org_sources.csv"
+        self.project_count = 3
+        full_orgs_list = []
+
+        self.mock_rss_response()
+
+        with HTTMock(self.response_content):
+            # get the orgs list for comparison
+            full_orgs_list = run_update.get_organizations(test_sources)
+            # run the update on the same orgs
+            run_update.main(org_sources=test_sources)
+
+        # confirm that the orgs in the list are in the database
+        for org_check in full_orgs_list:
+            filter = Organization.name == org_check['name']
+            organization = self.db.session.query(Organization).filter(filter).first()
+            self.assertIsNotNone(organization)
+            self.assertEqual(organization.name, org_check['name'])
+
+            # check events
+            events = self.db.session.query(Event).filter(Event.organization_name == org_check['name']).all()
+            print "org %s has %s events!" % (org_check['name'], len(events))
+            for event in events:
+                print "-> %s" % event.name
+
+            # check stories
+            stories = self.db.session.query(Story).filter(Story.organization_name == org_check['name']).all()
+            print "org %s has %s stories!" % (org_check['name'], len(stories))
+            for story in stories:
+                print "-> %s" % story.title
+
+            # check projects
+            projects = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
+            print "org %s has %s projects!" % (org_check['name'], len(projects))
+            for project in projects:
+                print "-> %s" % project.name
+
+                # check issues
+                issues = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
+                print "- project %s has %s issues!" % (project.name, len(issues))
+                for issue in issues:
+                    print "--> %s" % issue.title
+
+                    # check labels
+                    labels = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
+                    print "-- issue %s has %s labels!" % (issue.title, len(labels))
+                    for label in labels:
+                        print "---> %s" % label.name
+
+
+        # reset with just two projects
+        self.project_count = 2
+        partial_orgs_list = []
+        with HTTMock(self.response_content):
+            partial_orgs_list = run_update.get_organizations(test_sources)
+            run_update.main(org_sources=test_sources)
+
+        # confirm that the two projects are in the database
+        for org_check in partial_orgs_list:
+            filter = Organization.name == org_check['name']
+            organization = self.db.session.query(Organization).filter(filter).first()
+            self.assertIsNotNone(organization)
+            self.assertEqual(organization.name, org_check['name'])
+
+        # confirm that the orphaned project is no longer in the database
+        orphaned_org_names = list(set([item['name'] for item in full_orgs_list]) - set([item['name'] for item in partial_orgs_list]))
+        for org_name_check in orphaned_org_names:
+            filter = Organization.name == org_name_check
+            organization = self.db.session.query(Organization).filter(filter).first()
+            self.assertIsNone(organization)
+
+        self.project_count = 3
+
 
 if __name__ == '__main__':
     unittest.main()
