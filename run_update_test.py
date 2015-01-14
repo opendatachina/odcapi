@@ -53,7 +53,7 @@ class RunUpdateTestCase(unittest.TestCase):
     def get_raw_organization_list(self, count=3):
         if type(count) is not int:
             count = 3
-        lines = [u'''name,website,events_url,rss,projects_list_url'''.encode('utf8'), u'''Cöde for Ameriça,http://codeforamerica.org,http://www.meetup.com/events/Code-For-Charlotte/,http://www.codeforamerica.org/blog/feed/,http://example.com/cfa-projects.csv'''.encode('utf8'), u'''Code for America (2),,,,https://github.com/codeforamerica'''.encode('utf8'), u'''Code for America (3),,,http://www.codeforamerica.org/blog/another/feed/,https://www.github.com/orgs/codeforamerica'''.encode('utf8')]
+        lines = [u'''name,website,events_url,rss,projects_list_url'''.encode('utf8'), u'''Cöde for Ameriça,http://codeforamerica.org,http://www.meetup.com/events/Code-For-Charlotte/,http://www.codeforamerica.org/blog/feed/,http://example.com/cfa-projects.csv'''.encode('utf8'), u'''Code for America (2),,,,https://github.com/codeforamerica'''.encode('utf8'), u'''Code for America (3),,http://www.meetup.com/events/Code-For-Rhode-Island/,http://www.codeforamerica.org/blog/another/feed/,https://www.github.com/orgs/codeforamerica'''.encode('utf8')]
         return '\n'.join(lines[0:count + 1])
 
     def response_content(self, url, request):
@@ -88,6 +88,12 @@ class RunUpdateTestCase(unittest.TestCase):
 
         elif match(r'https:\/\/api\.meetup\.com\/2\/events\?status=past,upcoming&format=json&group_urlname=Code-For-Charlotte&key=', url.geturl()):
             events_file=open('meetup_events.json')
+            events_content = events_file.read()
+            events_file.close()
+            return response(200, events_content)
+
+        elif match(r'https:\/\/api\.meetup\.com\/2\/events\?status=past,upcoming&format=json&group_urlname=Code-For-Rhode-Island&key=', url.geturl()):
+            events_file=open('meetup_events_another.json')
             events_content = events_file.read()
             events_file.close()
             return response(200, events_content)
@@ -656,31 +662,31 @@ class RunUpdateTestCase(unittest.TestCase):
             events = self.db.session.query(Event).filter(Event.organization_name == org_check['name']).all()
             print "org %s has %s events!" % (org_check['name'], len(events))
             for event in events:
-                print "-> %s" % event.name
+                print "-> %s (id:%s)" % (event.name, event.id)
 
             # check stories
             stories = self.db.session.query(Story).filter(Story.organization_name == org_check['name']).all()
             print "org %s has %s stories!" % (org_check['name'], len(stories))
             for story in stories:
-                print "-> %s" % story.title
+                print "-> %s (id:%s)" % (story.title, story.id)
 
             # check projects
             projects = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
             print "org %s has %s projects!" % (org_check['name'], len(projects))
             for project in projects:
-                print "-> %s" % project.name
+                print "-> %s (id:%s)" % (project.name, project.id)
 
                 # check issues
                 issues = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
                 print "- project %s has %s issues!" % (project.name, len(issues))
                 for issue in issues:
-                    print "--> %s" % issue.title
+                    print "--> %s (id:%s)" % (issue.title, issue.id)
 
                     # check labels
                     labels = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
                     print "-- issue %s has %s labels!" % (issue.title, len(labels))
                     for label in labels:
-                        print "---> %s" % label.name
+                        print "---> %s (id:%s)" % (label.name, label.id)
 
 
         # reset with just two projects
@@ -688,6 +694,21 @@ class RunUpdateTestCase(unittest.TestCase):
         partial_orgs_list = []
         with HTTMock(self.response_content):
             partial_orgs_list = run_update.get_organizations(test_sources)
+
+        orphaned_org_names = list(set([item['name'] for item in full_orgs_list]) - set([item['name'] for item in partial_orgs_list]))
+        orphaned_issue_ids = []
+        orphaned_label_ids = []
+        for org_name in orphaned_org_names:
+            projects = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
+            for project in projects:
+                issues = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
+                for issue in issues:
+                    orphaned_issue_ids.append(issue.id)
+                    labels = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
+                    for label in labels:
+                        orphaned_label_ids.append(label.id)
+
+        with HTTMock(self.response_content):
             run_update.main(org_sources=test_sources)
 
         # confirm that the two projects are in the database
@@ -696,13 +717,30 @@ class RunUpdateTestCase(unittest.TestCase):
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
+            #self.assertTrue(organization.keep)
 
-        # confirm that the orphaned project is no longer in the database
-        orphaned_org_names = list(set([item['name'] for item in full_orgs_list]) - set([item['name'] for item in partial_orgs_list]))
+        # confirm that the orphaned organization and its children are no longer in the database
         for org_name_check in orphaned_org_names:
             filter = Organization.name == org_name_check
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNone(organization)
+
+            events = self.db.session.query(Event).filter(Event.organization_name == org_name_check).all()
+            self.assertEqual(len(events), 0)
+
+            stories = self.db.session.query(Story).filter(Story.organization_name == org_name_check).all()
+            self.assertEqual(len(stories), 0)
+
+            projects = self.db.session.query(Project).filter(Project.organization_name == org_name_check).all()
+            self.assertEqual(len(projects), 0)
+
+            for issue_id in orphaned_issue_ids:
+                issue = self.db.session.query(Issue).filter(Issue.id == issue_id).first()
+                self.assertIsNone(issue)
+
+            for label_id in orphaned_label_ids:
+                label = self.db.session.query(Label).filter(Label.id == label_id).first()
+                self.assertIsNone(label)
 
         # reset to three projects
         self.project_count = 3

@@ -1,0 +1,131 @@
+{
+  "results": [
+  {
+    "rsvp_limit": 50,
+    "status": "past",
+    "visibility": "public",
+    "maybe_rsvp_count": 0,
+    "venue": {
+      "id": 1394669,
+      "zip": "28205",
+      "lon": -71.4543,
+      "repinned": false,
+      "name": "Brown TRI LAB",
+      "state": "RI",
+      "address_1": "10 Davol Sq.",
+      "lat": 41.4887,
+      "city": "Providence",
+      "country": "us"
+    },
+    "id": "156302132",
+    "utc_offset": -18000000,
+    "time": 1389916800000,
+    "waitlist_count": 0,
+    "updated": 1390198416000,
+    "yes_rsvp_count": 48,
+    "created": 1387484285000,
+    "event_url": "http://www.meetup.com/Rhode-Island-Code-for-America-Brigade/events/206703972/",
+    "description": "<p>Open to all! Join us to learn, create, hack, and do, all for the civic good!</p>",
+    "how_to_find_us": "",
+    "name": "September 16th Hack Night!",
+    "headcount": 0,
+      "rating": {
+      "count": 7,
+      "average": 4.710000038146973
+    },
+    "group": {
+      "id": 10916672,
+      "group_lat": 35.220001220703125,
+      "name": "Code For Rhode Island",
+      "group_lon": -80.79000091552734,
+      "join_mode": "approval",
+      "urlname": "Code-For-Rhode-Island",
+      "who": "Citizens"
+    }
+  },
+  {
+    "status": "past",
+    "visibility": "public",
+    "maybe_rsvp_count": 0,
+    "venue": {
+      "zip": "28202",
+      "phone": "704-930-7444",
+      "lon": -80.844313,
+      "state": "RI",
+      "address_1": "201 S. Tryon",
+      "address_2": "15th Floor",
+      "city": "Providence",
+      "country": "us",
+      "id": 1543691,
+      "repinned": false,
+      "name": "Skookum Digital Works",
+      "lat": 35.226253
+    },
+    "id": "162140372",
+    "utc_offset": -18000000,
+    "time": 1392939000000,
+    "waitlist_count": 0,
+    "updated": 1392989659000,
+    "yes_rsvp_count": 56,
+    "created": 1390494047000,
+    "event_url": "http://www.meetup.com/Rhode-Island-Code-for-America-Brigade/events/209442472/",
+    "description": "<p>Save the date for our public launch event.  You'll have a chance to meet the fellows, and check up on all the progress we've mLet's hack. More specifically, let's get together and chat about current affairs and projects etc.</p>",
+    "how_to_find_us": "Final details pending",
+    "name": "November 4th Brigade Meetup",
+    "headcount": 0,
+    "rating": {
+      "count": 2,
+      "average": 5
+    },
+    "group": {
+      "id": 10916672,
+      "group_lat": 35.220001220703125,
+      "name": "Code For Rhode Island",
+      "group_lon": -80.79000091552734,
+      "join_mode": "approval",
+      "urlname": "Code-For-Rhode-Island",
+      "who": "Citizens"
+    }
+  },
+  {
+    "status": "past",
+    "visibility": "public",
+    "maybe_rsvp_count": 0,
+    "venue": {
+      "id": 17502142,
+      "lon": -80.846367,
+      "repinned": false,
+      "name": "Packard Place",
+      "state": "RI",
+      "address_1": "222 S. Church Street",
+      "lat": 35.227127,
+      "city": "Providence",
+      "country": "us"
+    },
+    "id": "167558762",
+    "utc_offset": -18000000,
+    "duration": 10800000,
+    "time": 1394058600000,
+    "waitlist_count": 0,
+    "updated": 1394125991000,
+    "yes_rsvp_count": 38,
+    "created": 1393013397000,
+    "event_url": "http://www.meetup.com/cleveland-civic-hacking/events/197969772/",
+    "description": "<p>Come join us for the OSM Edit-a-thon as we join in the celebration of OpenStreetMap's 10th Birthday! Help put Cleveland on the map in OpenStreetMap, the free global map that everyone can edit and use with minimal restrictions, like wikipedia.</p>",
+    "name": "Summer OpenStreetMap Editathon",
+    "headcount": 0,
+    "rating": {
+      "count": 3,
+      "average": 4.670000076293945
+    },
+    "group": {
+      "id": 10916672,
+      "group_lat": 35.220001220703125,
+      "name": "Code For Rhode Island",
+      "group_lon": -80.79000091552734,
+      "join_mode": "approval",
+      "urlname": "Code-For-Rhode-Island",
+      "who": "Citizens"
+    }
+  }]
+}
