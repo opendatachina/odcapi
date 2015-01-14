@@ -658,36 +658,6 @@ class RunUpdateTestCase(unittest.TestCase):
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
 
-            # check events
-            events = self.db.session.query(Event).filter(Event.organization_name == org_check['name']).all()
-            print "org %s has %s events!" % (org_check['name'], len(events))
-            for event in events:
-                print "-> %s (id:%s)" % (event.name, event.id)
-
-            # check stories
-            stories = self.db.session.query(Story).filter(Story.organization_name == org_check['name']).all()
-            print "org %s has %s stories!" % (org_check['name'], len(stories))
-            for story in stories:
-                print "-> %s (id:%s)" % (story.title, story.id)
-
-            # check projects
-            projects = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
-            print "org %s has %s projects!" % (org_check['name'], len(projects))
-            for project in projects:
-                print "-> %s (id:%s)" % (project.name, project.id)
-
-                # check issues
-                issues = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
-                print "- project %s has %s issues!" % (project.name, len(issues))
-                for issue in issues:
-                    print "--> %s (id:%s)" % (issue.title, issue.id)
-
-                    # check labels
-                    labels = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
-                    print "-- issue %s has %s labels!" % (issue.title, len(labels))
-                    for label in labels:
-                        print "---> %s (id:%s)" % (label.name, label.id)
-
 
         # reset with just two projects
         self.project_count = 2
