@@ -1,0 +1,74 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
+<channel>
+<title>Code for America</title>
+<atom:link href="http://www.codeforamerica.org/blog/feed/" rel="self" type="application/rss+xml"/>
+<link>http://www.codeforamerica.org/blog</link>
+<description>A New Kind of Public Service</description>
+<lastBuildDate>Fri, 14 Mar 2014 19:40:42 +0000</lastBuildDate>
+<language>en-US</language>
+<sy:updatePeriod>hourly</sy:updatePeriod>
+<sy:updateFrequency>1</sy:updateFrequency>
+<generator>http://wordpress.org/?v=3.6</generator>
+<item>
+<title>Join us in Kansas City for the Gigabit City Summit!</title>
+<link>
+http://www.codeforamerica.org/blog/2015/01/12/join-us-in-kansas-city-for-the-gigabit-city-summit/
+</link>
+<comments>
+http://www.codeforamerica.org/blog/2015/01/12/join-us-in-kansas-city-for-the-gigabit-city-summit/#comments
+</comments>
+<pubDate>Mon, 12 Jan 2015 19:40:42 +0000</pubDate>
+<dc:creator>Christopher Whitaker</dc:creator>
+<category>
+<![CDATA[ News ]]>
+</category>
+<guid isPermaLink="false">http://www.codeforamerica.org/blog/?p=30142</guid>
+<description>
+<![CDATA[
+It was nearly four years ago...
+]]>
+</description>
+<content:encoded>
+<![CDATA[
+<p>It was nearly four years ago...</p>
+]]>
+</content:encoded>
+<wfw:commentRss>
+http://www.codeforamerica.org/blog/2015/01/12/join-us-in-kansas-city-for-the-gigabit-city-summit/feed/
+</wfw:commentRss>
+<slash:comments>0</slash:comments>
+</item>
+<item>
+<title>CONVOCATORIA: MAKE ENERGY, A US-MEXICO INNOVATION CHALLENGE</title>
+<link>
+http://labplc.mx/make-energy/
+</link>
+<comments>
+http://labplc.mx/make-energy/#comments
+</comments>
+<pubDate>Tue, 13 Jan 2015 21:30:51 +0000</pubDate>
+<dc:creator>LABORATORIO PARA LA CIUDAD</dc:creator>
+<category>
+<![CDATA[ News ]]>
+</category>
+<category>
+<![CDATA[ Open Data ]]>
+</category>
+<guid isPermaLink="false">http://www.codeforamerica.org/blog/?p=30137</guid>
+<description>
+<![CDATA[
+Un grupo de organizaciones estadunidenses y mexicanas busca proyectos maker que...
+]]>
+</description>
+<content:encoded>
+<![CDATA[
+<p>Un grupo de organizaciones estadunidenses y mexicanas busca proyectos maker que...</p>
+]]>
+</content:encoded>
+<wfw:commentRss>
+http://labplc.mx/make-energy/feed/
+</wfw:commentRss>
+<slash:comments>0</slash:comments>
+</item>
+</channel>
+</rss>
