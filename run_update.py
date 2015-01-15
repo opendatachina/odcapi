@@ -475,7 +475,7 @@ def get_issues(org_name):
 
     # Populate issues for each project
     for project in projects:
-        # Mark this project's issues for deletion
+        # Mark this project's issues for deletion :::here (project)
         db.session.execute(db.update(Issue, values={'keep': False}).where(Issue.project_id == project.id))
 
         # Get github issues api url
@@ -487,6 +487,7 @@ def get_issues(org_name):
         
         # Verify if content has not been modified since last run
         if got.status_code == 304:
+            # :::here (issue)
             db.session.execute(db.update(Issue, values={'keep': True}).where(Issue.project_id == project.id))
             logging.info('Issues %s have not changed since last update', issues_url)
 
@@ -557,6 +558,7 @@ def count_people_totals(all_projects):
 
     return users
 
+# :::here
 def save_organization_info(session, org_dict):
     ''' Save a dictionary of organization info to the datastore session.
 
@@ -570,19 +572,20 @@ def save_organization_info(session, org_dict):
     if not existing_org:
         new_organization = Organization(**org_dict)
         session.add(new_organization)
-        # session.commit()
+        session.commit()
         return new_organization
 
     # Mark the existing organization for safekeeping
     existing_org.last_updated = time()
+    # :::here (organization)
     existing_org.keep = True
 
     # Update existing organization details.
     for (field, value) in org_dict.items():
         setattr(existing_org, field, value)
 
-    # Flush existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
-    session.flush()
+    # Commit existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
+    session.commit()
 
     return existing_org
 
@@ -602,6 +605,7 @@ def save_project_info(session, proj_dict):
         return new_project
 
     # Mark the existing project for safekeeping.
+    # :::here (project)
     existing_project.keep = True
 
     # Update existing project details
@@ -629,7 +633,7 @@ def save_issue(session, issue):
         session.commit()
     
     else:
-        # Mark the existing issue for safekeeping.
+        # Mark the existing issue for safekeeping. :::here (issue)
         existing_issue.keep = True
         # Update existing issue details
         existing_issue.title = issue['title']
@@ -679,7 +683,7 @@ def save_event_info(session, event_dict):
         session.add(new_event)
         return new_event
 
-    # Mark the existing event for safekeeping.
+    # Mark the existing event for safekeeping. :::here (event)
     existing_event.keep = True
 
     # Update existing event details
@@ -705,7 +709,7 @@ def save_story_info(session, story_dict):
         session.add(new_story)
         return new_story
 
-    # Mark the existing story for safekeeping.
+    # Mark the existing story for safekeeping. :::here (story)
     existing_story.keep = True
 
     # Update existing story details
@@ -741,7 +745,7 @@ def main(org_name=None, org_sources=None):
 
     # Iterate over organizations and projects, saving them to db.session.
     for org_info in orgs_info:
-
+        #print "*** starting loop for %s" % org_info['name']
         if not is_safe_name(org_info['name']):
             error_dict = {
                 "error" : unicode('ValueError: Bad organization name: "%s"' % org_info['name']),
@@ -757,11 +761,13 @@ def main(org_name=None, org_sources=None):
             existing_org = db.session.query(Organization).filter(filter).first()
             organization_names.add(org_info['name'])
 
-            # Mark everything in this organization for deletion at first.
+            # Mark everything associated with this organization for deletion at first.
+            # :::here (event, story, project, organization)
             db.session.execute(db.update(Event, values={'keep': False}).where(Event.organization_name == org_info['name']))
             db.session.execute(db.update(Story, values={'keep': False}).where(Story.organization_name == org_info['name']))
             db.session.execute(db.update(Project, values={'keep': False}).where(Project.organization_name == org_info['name']))
             db.session.execute(db.update(Organization, values={'keep': False}).where(Organization.name == org_info['name']))
+            db.session.commit()
 
             # Empty lat longs are okay.
             if 'latitude' in org_info:
@@ -808,12 +814,14 @@ def main(org_name=None, org_sources=None):
                 save_issue(db.session, issue)
                 save_labels(db.session, issue)
 
-            # Remove everything marked for deletion.
-            db.session.query(Event).filter(not Event.keep).delete()
-            db.session.query(Story).filter(not Story.keep).delete()
-            db.session.query(Project).filter(not Project.keep).delete()
+            # Remove everything marked for deletion. :::here (event, story, project, issue, organization)
+            # :TODO: I think we can move this out of the loop AND/OR not use the keep flag for Organizations
+            db.session.query(Event).filter(Event.keep == False).delete()
+            db.session.query(Story).filter(Story.keep == False).delete()
+            db.session.query(Project).filter(Project.keep == False).delete()
             db.session.query(Issue).filter(Issue.keep == False).delete()
-            db.session.query(Organization).filter(not Organization.keep).delete()
+            db.session.query(Organization).filter(Organization.keep == False).delete()
+            db.session.commit()
 
         except:
             # Raise the error, get out of main(), and don't commit the transaction.
@@ -832,6 +840,7 @@ def main(org_name=None, org_sources=None):
         if bad_org.name in organization_names:
             continue
 
+        # :TODO: should be okay to just delete orphaned organizations, all other deletions will cascade
         db.session.execute(db.delete(Event).where(Event.organization_name == bad_org.name))
         db.session.execute(db.delete(Story).where(Story.organization_name == bad_org.name))
         db.session.execute(db.delete(Project).where(Project.organization_name == bad_org.name))

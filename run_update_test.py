@@ -680,6 +680,8 @@ class RunUpdateTestCase(unittest.TestCase):
                     for label in labels:
                         orphaned_label_ids.append(label.id)
 
+        #print "++++ running update!"
+
         with HTTMock(self.response_content):
             run_update.main(org_sources=test_sources)
 
@@ -689,7 +691,9 @@ class RunUpdateTestCase(unittest.TestCase):
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
+            #print "++++ testing organization %s keep: %s (type:%s)" % (organization.name, organization.keep, type(organization.keep))
             self.assertTrue(organization.keep)
+            #print "++++ passed assertion!"
 
         # confirm that the orphaned organization and its children are no longer in the database
         for org_name_check in orphaned_org_names:
