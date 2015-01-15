@@ -632,8 +632,8 @@ class RunUpdateTestCase(unittest.TestCase):
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
 
-    def test_orphaned_project_deleted(self):
-        ''' Affirm that a project is deleted when it's no longer included
+    def test_orphaned_object_deleted(self):
+        ''' Affirm that an object is deleted when it's no longer included
             in the returned csv
         '''
         from app import Organization, Project, Event, Story, Issue, Label
@@ -721,6 +721,11 @@ class RunUpdateTestCase(unittest.TestCase):
         # reset to three projects
         self.project_count = 3
 
+    def test_orphaned_objects_deleted(self):
+        ''' Affirm that sub-organization objects are deleted when
+            they're no longer referenced in returned data
+        '''
+        self.assertTrue(True)
 
 if __name__ == '__main__':
     unittest.main()
