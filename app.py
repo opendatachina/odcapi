@@ -13,6 +13,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy import types, desc
 from sqlalchemy.sql.expression import func
+from sqlalchemy.orm import backref
 from dictalchemy import make_class_dictable
 from dateutil.tz import tzoffset
 from mimetypes import guess_type
@@ -97,9 +98,7 @@ class Organization(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    events = db.relationship('Event', cascade='save-update, delete')
-    stories = db.relationship('Story', cascade='save-update, delete')
-    projects = db.relationship('Project', cascade='save-update, delete')
+    # can contain events, stories, projects (these relationships are defined in the child objects)
 
     def __init__(self, name, website=None, events_url=None,
                  rss=None, projects_list_url=None, type=None, city=None, latitude=None, longitude=None):
@@ -226,8 +225,8 @@ class Story(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan')
-    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
+    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan', backref=backref("stories", cascade="save-update, delete")) #child
+    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, title=None, link=None, type=None, organization_name=None):
         self.title = title
@@ -274,11 +273,10 @@ class Project(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan')
-    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
+    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan', backref=backref("projects", cascade="save-update, delete")) #child
+    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'), nullable=False)
 
-    # Issue has cascade so issues are deleted with their parent projects
-    issues = db.relationship('Issue', cascade='save-update, delete')
+    # can contain issues (this relationship is defined in the child object)
 
     def __init__(self, name, code_url=None, link_url=None,
                  description=None, type=None, categories=None,
@@ -327,15 +325,14 @@ class Issue(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     title = db.Column(db.Unicode())
     html_url = db.Column(db.Unicode())
-    labels = db.Column(JsonType())
     body = db.Column(db.Unicode())
     keep = db.Column(db.Boolean())
 
     # Relationships
-    project = db.relationship('Project', single_parent=True, cascade='all, delete-orphan')
-    project_id = db.Column(db.Integer(), db.ForeignKey('project.id', ondelete='CASCADE'))
+    project = db.relationship('Project', single_parent=True, cascade='all, delete-orphan', backref=backref("issues", cascade="save-update, delete")) #child
+    project_id = db.Column(db.Integer(), db.ForeignKey('project.id', ondelete='CASCADE'), nullable=False, index=True)
 
-    labels = db.relationship('Label', cascade='save-update, delete')
+    # can contain labels (this relationship is defined in the child object)
 
     def __init__(self, title, project_id=None, html_url=None, labels=None, body=None):
         self.title = title
@@ -377,7 +374,8 @@ class Label(db.Model):
     color = db.Column(db.Unicode())
     url = db.Column(db.Unicode())
 
-    issue = db.relationship('Issue', single_parent=True, cascade='all, delete-orphan')
+    # Relationships
+    issue = db.relationship('Issue', single_parent=True, cascade='all, delete-orphan', backref=backref("labels", cascade="save-update, delete")) #child
     issue_id = db.Column(db.Integer, db.ForeignKey('issue.id', ondelete='CASCADE'), nullable=False, index=True)
 
     def __init__(self, name, color, url, issue_id=None):
@@ -414,8 +412,8 @@ class Event(db.Model):
     keep = db.Column(db.Boolean())
 
     # Relationships
-    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan')
-    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'))
+    organization = db.relationship('Organization', single_parent=True, cascade='all, delete-orphan', backref=backref("events", cascade="save-update, delete")) #child
+    organization_name = db.Column(db.Unicode(), db.ForeignKey('organization.name', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, name, event_url, start_time_notz, created_at, utc_offset,
                  organization_name, location=None, end_time_notz=None, description=None):
