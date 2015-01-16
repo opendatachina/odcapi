@@ -622,7 +622,7 @@ def save_issue(session, issue):
         Save a dictionary of issue info to the datastore session.
         Return an app.Issue instance
     '''
-    # Select the current issue, filtering on title AND project_name.
+    # Select the current issue, filtering on title AND project_id.
     filter = Issue.title == issue['title'], Issue.project_id == issue['project_id']
     existing_issue = session.query(Issue).filter(*filter).first()
 
@@ -646,7 +646,7 @@ def save_labels(session, issue):
     '''
         Save labels to issues
     '''
-    # Get issue from db, to get id
+    # Select the current issue, filtering on title AND project_id.
     filter = Issue.title == issue['title'], Issue.project_id == issue['project_id']
     existing_issue = session.query(Issue).filter(*filter).first()
 
@@ -672,7 +672,7 @@ def save_event_info(session, event_dict):
         Save a dictionary of event into to the datastore session then return
         that event instance
     '''
-    # Select the current event, filtering on event_url and organization.
+    # Select the current event, filtering on event_url and organization name.
     filter = Event.event_url == event_dict['event_url'], \
              Event.organization_name == event_dict['organization_name']
     existing_event = session.query(Event).filter(*filter).first()
@@ -698,6 +698,7 @@ def save_story_info(session, story_dict):
         Save a dictionary of story into to the datastore session then return
         that story instance
     '''
+    # Select the current story, filtering on link and organization name.
     filter = Story.organization_name == story_dict['organization_name'], \
              Story.link == story_dict['link']
 
@@ -818,8 +819,8 @@ def main(org_name=None, org_sources=None):
             # :TODO: I think we can move this out of the loop AND/OR not use the keep flag for Organizations
             db.session.query(Event).filter(Event.keep == False).delete()
             db.session.query(Story).filter(Story.keep == False).delete()
-            db.session.query(Project).filter(Project.keep == False).delete()
             db.session.query(Issue).filter(Issue.keep == False).delete()
+            db.session.query(Project).filter(Project.keep == False).delete()
             db.session.query(Organization).filter(Organization.keep == False).delete()
             db.session.commit()
 
