@@ -1,0 +1,45 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
+<channel>
+<title>Code for America</title>
+<atom:link href="http://www.codeforamerica.org/blog/feed/" rel="self" type="application/rss+xml"/>
+<link>http://www.codeforamerica.org/blog</link>
+<description>A New Kind of Public Service</description>
+<lastBuildDate>Fri, 14 Mar 2014 19:40:42 +0000</lastBuildDate>
+<language>en-US</language>
+<sy:updatePeriod>hourly</sy:updatePeriod>
+<sy:updateFrequency>1</sy:updateFrequency>
+<generator>http://wordpress.org/?v=3.6</generator>
+<item>
+<title>Open, transparent Chattanooga</title>
+<link>
+http://www.codeforamerica.org/blog/2014/03/12/open-transparent-chattanooga/
+</link>
+<comments>
+http://www.codeforamerica.org/blog/2014/03/12/open-transparent-chattanooga/#comments
+</comments>
+<pubDate>Wed, 12 Mar 2014 21:30:51 +0000</pubDate>
+<dc:creator>Mayor Andy Berke</dc:creator>
+<category>
+<![CDATA[ News ]]>
+</category>
+<category>
+<![CDATA[ Open Data ]]>
+</category>
+<guid isPermaLink="false">http://www.codeforamerica.org/blog/?p=30137</guid>
+<description>
+<![CDATA[
+Open and transparent ...
+]]>
+</description>
+<content:encoded>
+<![CDATA[
+<p>Open and transparent ...</p>
+]]>
+</content:encoded>
+<wfw:commentRss>
+http://www.codeforamerica.org/blog/2014/03/12/open-transparent-chattanooga/feed/
+</wfw:commentRss>
+<slash:comments>0</slash:comments>
+</item>
+</channel>
+</rss>
