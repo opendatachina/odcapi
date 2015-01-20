@@ -721,7 +721,7 @@ class RunUpdateTestCase(unittest.TestCase):
                     for label in labels:
                         orphaned_label_ids.append(label.id)
 
-        #print "++++ running update!"
+        print "++++ running update!"
 
         with HTTMock(self.response_content):
             run_update.main(org_sources=test_sources)
@@ -732,9 +732,9 @@ class RunUpdateTestCase(unittest.TestCase):
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
-            #print "++++ testing organization %s keep: %s (type:%s)" % (organization.name, organization.keep, type(organization.keep))
+            print "++++ testing organization %s keep: %s (type:%s)" % (organization.name, organization.keep, type(organization.keep))
             self.assertTrue(organization.keep)
-            #print "++++ passed assertion!"
+            print "++++ passed assertion!"
 
         # confirm that the orphaned organization and its children are no longer in the database
         for org_name_check in orphaned_org_names:
@@ -778,11 +778,31 @@ class RunUpdateTestCase(unittest.TestCase):
 
         self.results_state = 'before'
 
+        # for checking data from the source against what's in the database
+        check_orgs = []
+        check_events = {}
+        check_stories = {}
+        check_projects = {}
+        check_issues = {}
+        check_labels = {}
+
         with HTTMock(self.response_content):
             # get the orgs list for comparison
             full_orgs_list = run_update.get_organizations(test_sources)
             # run the update on the same orgs
             run_update.main(org_sources=test_sources)
+
+            # get raw data from the source to compare with what's in the database
+            check_orgs = run_update.get_organizations('test_org_sources.csv')
+            for check_org in check_orgs:
+                check_org_obj = Organization(**check_org)
+                check_events[check_org_obj.name] = run_update.get_meetup_events(check_org_obj, run_update.get_event_group_identifier(check_org_obj.events_url))
+                check_stories[check_org_obj.name] = run_update.get_stories(check_org_obj)
+                check_projects[check_org_obj.name] = run_update.get_projects(check_org_obj)
+                check_issues[check_org_obj.name] = {}
+                for check_project in check_projects[check_org_obj.name]:
+                    check_project_obj = Project(**check_project)
+                    check_issues[check_org_obj.name][check_project_obj.name] = run_update.get_issues_for_project(check_project_obj)
 
         # confirm that the org and its children are in the database and save records to compare later
         b_events = {}
@@ -798,44 +818,35 @@ class RunUpdateTestCase(unittest.TestCase):
             self.assertTrue(organization.keep)
 
             b_events[organization.name] = self.db.session.query(Event).filter(Event.organization_name == org_check['name']).all()
-            #print "%s events with names %s" % (len(b_events[organization.name]), ", ".join(["'" + item.name + "'" for item in b_events[organization.name]]))
+            print "%s events with names %s" % (len(b_events[organization.name]), ", ".join(["'" + item.name + "'" for item in b_events[organization.name]]))
             for event in b_events[organization.name]:
                 self.assertTrue(event.keep)
 
             b_stories[organization.name] = self.db.session.query(Story).filter(Story.organization_name == org_check['name']).all()
-            #print "%s stories with names %s" % (len(b_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in b_stories[organization.name]]))
+            print "%s stories with names %s" % (len(b_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in b_stories[organization.name]]))
             for story in b_stories[organization.name]:
                 self.assertTrue(story.keep)
 
             b_projects[organization.name] = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
-            #print "%s projects with names %s" % (len(b_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in b_projects[organization.name]]))
+            print "%s projects with names %s" % (len(b_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in b_projects[organization.name]]))
             b_issues[organization.name] = {}
             b_labels[organization.name] = {}
             for project in b_projects[organization.name]:
                 self.assertTrue(project.keep)
                 b_issues[organization.name][project.name] = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
                 b_labels[organization.name][project.name] = {}
-                #print "%s issues for project '%s' with names %s" % (len(b_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in b_issues[organization.name][project.name]]))
+                print "%s issues for project '%s' with names %s" % (len(b_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in b_issues[organization.name][project.name]]))
                 for issue in b_issues[organization.name][project.name]:
                     self.assertTrue(issue.keep)
                     b_labels[organization.name][project.name][issue.title] = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
-                    #print "%s labels for issue '%s' with names %s" % (len(b_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in b_labels[organization.name][project.name][issue.title]]))
+                    print "%s labels for issue '%s' with names %s" % (len(b_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in b_labels[organization.name][project.name][issue.title]]))
 
-        #print "++++ running update!"
+        print "++++ running update!"
 
         self.results_state = 'after'
 
         with HTTMock(self.response_content):
             run_update.main(org_sources=test_sources)
-
-            # get details directly from the source to compare
-            check_orgs = run_update.get_organizations('test_org_sources.csv')
-            check_org_obj = Organization(**check_orgs[0])
-            check_events = run_update.get_meetup_events(check_org_obj, run_update.get_event_group_identifier(check_org_obj.events_url))
-            check_stories = run_update.get_stories(check_org_obj)
-            check_projects = run_update.get_projects(check_org_obj)
-            check_project_obj = Project(**check_projects[0])
-            check_issues = run_update.get_issues_for_project(check_project_obj)
 
         a_events = {}
         a_stories = {}
@@ -850,28 +861,28 @@ class RunUpdateTestCase(unittest.TestCase):
             self.assertTrue(organization.keep)
 
             a_events[organization.name] = self.db.session.query(Event).filter(Event.organization_name == org_check['name']).all()
-            #print "%s events with names %s" % (len(a_events[organization.name]), ", ".join(["'" + item.name + "'" for item in a_events[organization.name]]))
+            print "%s events with names %s" % (len(a_events[organization.name]), ", ".join(["'" + item.name + "'" for item in a_events[organization.name]]))
             for event in a_events[organization.name]:
                 self.assertTrue(event.keep)
 
             a_stories[organization.name] = self.db.session.query(Story).filter(Story.organization_name == org_check['name']).all()
-            #print "%s stories with names %s" % (len(a_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in a_stories[organization.name]]))
+            print "%s stories with names %s" % (len(a_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in a_stories[organization.name]]))
             for story in a_stories[organization.name]:
                 self.assertTrue(story.keep)
 
             a_projects[organization.name] = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
-            #print "%s projects with names %s" % (len(a_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in a_projects[organization.name]]))
+            print "%s projects with names %s" % (len(a_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in a_projects[organization.name]]))
             a_issues[organization.name] = {}
             a_labels[organization.name] = {}
             for project in a_projects[organization.name]:
                 self.assertTrue(project.keep)
                 a_issues[organization.name][project.name] = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
                 a_labels[organization.name][project.name] = {}
-                #print "%s issues for project '%s' with names %s" % (len(a_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in a_issues[organization.name][project.name]]))
+                print "%s issues for project '%s' with names %s" % (len(a_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in a_issues[organization.name][project.name]]))
                 for issue in a_issues[organization.name][project.name]:
                     self.assertTrue(issue.keep)
                     a_labels[organization.name][project.name][issue.title] = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
-                    #print "%s labels for issue '%s' with names %s" % (len(a_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in a_labels[organization.name][project.name][issue.title]]))
+                    print "%s labels for issue '%s' with names %s" % (len(a_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in a_labels[organization.name][project.name][issue.title]]))
 
         self.results_state = 'before'
 
