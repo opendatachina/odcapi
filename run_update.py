@@ -460,12 +460,40 @@ def update_project_info(project):
             project['github_details']['participation'] = [0] * 50
     return project
 
+def get_issues_for_project(project):
+    ''' get the issues for a single project in dict format
+        without touching the database (used for testing)
+    '''
+    issues = []
+
+    # Get github issues api url
+    _, host, path, _, _, _ = urlparse(project.code_url)
+    issues_url = 'https://api.github.com/repos' + path + '/issues'
+
+    # Ping github's api for project issues
+    got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
+    
+    # Save each issue in response
+    responses = get_adjoined_json_lists(got, headers={'If-None-Match': project.last_updated_issues})
+    for issue in responses:
+        # Type check the issue, we are expecting a dictionary
+        if type(issue) == type({}):
+            # Pull requests are returned along with issues. Skip them.
+            if "/pull/" in issue['html_url']:
+                continue
+            issue_dict = dict(title=issue['title'], html_url=issue['html_url'],
+                              body=issue['body'], project_id=project.id, labels=issue['labels'])
+            issues.append(issue_dict)
+        else:
+            logging.error('Issue for project %s is not a dictionary', project.name)
+
+    return issues
+
 def get_issues(org_name):
     '''
         Get github issues associated to each Organization's Projects.
     '''
     issues = []
-    labels = []
 
     # Flush the current db session to save projects added in current run
     db.session.flush()
