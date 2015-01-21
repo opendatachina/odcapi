@@ -678,22 +678,25 @@ def save_labels(session, issue):
     filter = Issue.title == issue['title'], Issue.project_id == issue['project_id']
     existing_issue = session.query(Issue).filter(*filter).first()
 
-    # Get list of existing label names
-    existing_label_names = []
-    for existing_label in existing_issue.labels:
-        if existing_label.name not in existing_label_names:
-            existing_label_names.append(existing_label.name)
+    # Get list of existing and incoming label names (dupes will be filtered out in comparison process)
+    existing_label_names = [label.name for label in existing_issue.labels]
+    incoming_label_names = [label['name'] for label in issue['labels']]
 
-    # Add labels to db
-    for label in issue['labels']:
-        # don't add duplicates
-        if label["name"] not in existing_label_names:
+    # Add labels that are in the incoming list and not the existing list
+    add_label_names = list(set(incoming_label_names) - set(existing_label_names))
+    for label_dict in issue['labels']:
+        if label_dict['name'] in add_label_names:
             # add the issue id to the labels
-            label["issue_id"] = existing_issue.id
-            new_label = Label(**label)
+            label_dict["issue_id"] = existing_issue.id
+            new_label = Label(**label_dict)
             session.add(new_label)
             session.commit()
 
+    # Delete labels that are not in the incoming list but are in the existing list
+    delete_label_names = list(set(existing_label_names) - set(incoming_label_names))
+    for label_name in delete_label_names:
+        session.query(Label).filter(Label.issue_id == existing_issue.id, Label.name == label_name).delete()
+        session.commit()
 
 def save_event_info(session, event_dict):
     '''
