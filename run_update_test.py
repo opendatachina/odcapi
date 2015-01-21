@@ -721,8 +721,6 @@ class RunUpdateTestCase(unittest.TestCase):
                     for label in labels:
                         orphaned_label_ids.append(label.id)
 
-        #print "++++ running update!"
-
         with HTTMock(self.response_content):
             run_update.main(org_sources=test_sources)
 
@@ -732,9 +730,7 @@ class RunUpdateTestCase(unittest.TestCase):
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
-            #print "++++ testing organization %s keep: %s (type:%s)" % (organization.name, organization.keep, type(organization.keep))
             self.assertTrue(organization.keep)
-            #print "++++ passed assertion!"
 
         # confirm that the orphaned organization and its children are no longer in the database
         for org_name_check in orphaned_org_names:
@@ -803,7 +799,6 @@ class RunUpdateTestCase(unittest.TestCase):
         db_labels = {}
         # verify that we have the number of organizations that we expect
         self.assertEqual(len(check_orgs), len(self.db.session.query(Organization).all()))
-        #print "%s organization(s) with names %s" % (len(check_orgs), ", ".join(["'" + item['name'] + "'" for item in check_orgs]))
         for org_dict in check_orgs:
             # get the matching ORGANIZATION from the database
             organization = self.db.session.query(Organization).filter(Organization.name == org_dict['name']).first()
@@ -814,7 +809,6 @@ class RunUpdateTestCase(unittest.TestCase):
             db_events[organization.name] = self.db.session.query(Event).filter(Event.organization_name == org_dict['name']).all()
             # verify that we have the number of events that we expect
             self.assertEqual(len(check_events[organization.name]), len(db_events[organization.name]))
-            #print "%s event(s) with names %s" % (len(db_events[organization.name]), ", ".join(["'" + item.name + "'" for item in db_events[organization.name]]))
             for event_dict in check_events[organization.name]:
                 event = self.db.session.query(Event).filter(Event.event_url == event_dict['event_url'], Event.organization_name == event_dict['organization_name']).first()
                 self.assertIsNotNone(event)
@@ -824,7 +818,6 @@ class RunUpdateTestCase(unittest.TestCase):
             db_stories[organization.name] = self.db.session.query(Story).filter(Story.organization_name == org_dict['name']).all()
             # verify that we have the number of stories we expect
             self.assertEqual(len(check_stories[organization.name]), len(db_stories[organization.name]))
-            #print "%s story/stories with names %s" % (len(db_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in db_stories[organization.name]]))
             for story_dict in check_stories[organization.name]:
                 story = self.db.session.query(Story).filter(Story.organization_name == story_dict['organization_name'], Story.link == story_dict['link']).first()
                 self.assertIsNotNone(story)
@@ -834,7 +827,6 @@ class RunUpdateTestCase(unittest.TestCase):
             db_projects[organization.name] = self.db.session.query(Project).filter(Project.organization_name == org_dict['name']).all()
             # verify that we have the number of projects we expect
             self.assertEqual(len(check_projects[organization.name]), len(db_projects[organization.name]))
-            #print "%s project(s) with names %s" % (len(db_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in db_projects[organization.name]]))
             db_issues[organization.name] = {}
             db_labels[organization.name] = {}
 
@@ -847,7 +839,6 @@ class RunUpdateTestCase(unittest.TestCase):
                 db_issues[organization.name][project.name] = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
                 # verify that we have the number of issues we expect
                 self.assertEqual(len(check_issues[organization.name][project.name]), len(db_issues[organization.name][project.name]))
-                #print "%s issue(s) for project '%s' with names %s" % (len(db_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in db_issues[organization.name][project.name]]))
                 db_labels[organization.name][project.name] = {}
 
                 for issue_dict in check_issues[organization.name][project.name]:
@@ -859,7 +850,6 @@ class RunUpdateTestCase(unittest.TestCase):
                     db_labels[organization.name][project.name][issue.title] = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
                     # verify that we have the number of labels we expect
                     self.assertEqual(len(issue_dict['labels']), len(db_labels[organization.name][project.name][issue.title]))
-                    #print "%s label(s) for issue '%s' with names %s" % (len(db_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in db_labels[organization.name][project.name][issue.title]]))
 
                     for label_dict in issue_dict['labels']:
                         label = self.db.session.query(Label).filter(Label.issue_id == issue.id, Label.name == label_dict['name']).first()
@@ -877,8 +867,6 @@ class RunUpdateTestCase(unittest.TestCase):
         self.results_state = 'before'
 
         self.check_database_against_input()
-
-        #print "++++ running update!"
 
         # when results_state is 'after' we get fewer events, stories, projects, issues, labels
         self.results_state = 'after'
