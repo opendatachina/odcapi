@@ -776,7 +776,7 @@ class RunUpdateTestCase(unittest.TestCase):
         check_issues = {}
 
         with HTTMock(self.response_content):
-            # run the update on the same orgs
+            # run the update
             run_update.main(org_sources=test_sources)
 
             # get raw data from the source to compare with what's in the database

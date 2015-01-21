@@ -605,7 +605,6 @@ def save_organization_info(session, org_dict):
 
     # Mark the existing organization for safekeeping
     existing_org.last_updated = time()
-    # :::here (organization)
     existing_org.keep = True
 
     # Update existing organization details.
@@ -777,7 +776,7 @@ def main(org_name=None, org_sources=None):
 
     # Iterate over organizations and projects, saving them to db.session.
     for org_info in orgs_info:
-        #print "*** starting loop for %s" % org_info['name']
+
         if not is_safe_name(org_info['name']):
             error_dict = {
                 "error" : unicode('ValueError: Bad organization name: "%s"' % org_info['name']),
@@ -847,7 +846,6 @@ def main(org_name=None, org_sources=None):
                 save_labels(db.session, issue)
 
             # Remove everything marked for deletion. :::here (event, story, project, issue, organization)
-            # :TODO: I think we can move this out of the loop AND/OR not use the keep flag for Organizations
             db.session.query(Event).filter(Event.keep == False).delete()
             db.session.query(Story).filter(Story.keep == False).delete()
             db.session.query(Issue).filter(Issue.keep == False).delete()
@@ -863,21 +861,15 @@ def main(org_name=None, org_sources=None):
             # Commit and move on to the next organization.
             db.session.commit()
 
-    # Stop right here if an org name was specified.
-    if org_name:
-        return
+    # prune orphaned organizations if no organization name was passed
+    if not org_name:
+        for bad_org in db.session.query(Organization):
+            if bad_org.name in organization_names:
+                continue
 
-    # Delete any organization not found on this round.
-    for bad_org in db.session.query(Organization):
-        if bad_org.name in organization_names:
-            continue
-
-        # :TODO: should be okay to just delete orphaned organizations, all other deletions will cascade
-        db.session.execute(db.delete(Event).where(Event.organization_name == bad_org.name))
-        db.session.execute(db.delete(Story).where(Story.organization_name == bad_org.name))
-        db.session.execute(db.delete(Project).where(Project.organization_name == bad_org.name))
-        db.session.execute(db.delete(Organization).where(Organization.name == bad_org.name))
-        db.session.commit()
+            # delete orphaned organizations, all other deletions will cascade
+            db.session.execute(db.delete(Organization).where(Organization.name == bad_org.name))
+            db.session.commit()
 
 parser = ArgumentParser(description='''Update database from CSV source URL.''')
 parser.add_argument('--name', dest='name', help='Single organization name to update.')
