@@ -673,9 +673,9 @@ class RunUpdateTestCase(unittest.TestCase):
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
 
-    def test_orphaned_object_deleted(self):
-        ''' Affirm that an object is deleted when it's no longer included
-            in the returned csv
+    def test_orphaned_organization_deleted(self):
+        ''' Make sure that an organization and all its children are deleted when
+            the organization is no longer included in the returned csv
         '''
         from app import Organization, Project, Event, Story, Issue, Label
         import run_update
@@ -701,7 +701,7 @@ class RunUpdateTestCase(unittest.TestCase):
             self.assertTrue(organization.keep)
 
 
-        # reset with just two projects
+        # reset with just two organizations
         self.organization_count = 2
         partial_orgs_list = []
         with HTTMock(self.response_content):
@@ -721,20 +721,20 @@ class RunUpdateTestCase(unittest.TestCase):
                     for label in labels:
                         orphaned_label_ids.append(label.id)
 
-        print "++++ running update!"
+        #print "++++ running update!"
 
         with HTTMock(self.response_content):
             run_update.main(org_sources=test_sources)
 
-        # confirm that the two projects are in the database
+        # confirm that the two organizations are in the database
         for org_check in partial_orgs_list:
             filter = Organization.name == org_check['name']
             organization = self.db.session.query(Organization).filter(filter).first()
             self.assertIsNotNone(organization)
             self.assertEqual(organization.name, org_check['name'])
-            print "++++ testing organization %s keep: %s (type:%s)" % (organization.name, organization.keep, type(organization.keep))
+            #print "++++ testing organization %s keep: %s (type:%s)" % (organization.name, organization.keep, type(organization.keep))
             self.assertTrue(organization.keep)
-            print "++++ passed assertion!"
+            #print "++++ passed assertion!"
 
         # confirm that the orphaned organization and its children are no longer in the database
         for org_name_check in orphaned_org_names:
@@ -762,21 +762,15 @@ class RunUpdateTestCase(unittest.TestCase):
         # reset to three projects
         self.organization_count = 3
 
-    def test_orphaned_objects_deleted(self):
-        ''' Affirm that sub-organization objects are deleted when
-            they're no longer referenced in returned data
+    def check_database_against_input(self):
+        ''' verify that what's in the database matches the input
         '''
         from app import Organization, Project, Event, Story, Issue, Label
         import run_update
 
-        test_sources = "test_org_sources.csv"
-        # only get one organization
-        self.organization_count = 1
-        full_orgs_list = []
+        test_sources = 'test_org_sources.csv'
 
         self.setup_mock_rss_response()
-
-        self.results_state = 'before'
 
         # for checking data from the source against what's in the database
         check_orgs = []
@@ -784,16 +778,13 @@ class RunUpdateTestCase(unittest.TestCase):
         check_stories = {}
         check_projects = {}
         check_issues = {}
-        check_labels = {}
 
         with HTTMock(self.response_content):
-            # get the orgs list for comparison
-            full_orgs_list = run_update.get_organizations(test_sources)
             # run the update on the same orgs
             run_update.main(org_sources=test_sources)
 
             # get raw data from the source to compare with what's in the database
-            check_orgs = run_update.get_organizations('test_org_sources.csv')
+            check_orgs = run_update.get_organizations(test_sources)
             for check_org in check_orgs:
                 check_org_obj = Organization(**check_org)
                 check_events[check_org_obj.name] = run_update.get_meetup_events(check_org_obj, run_update.get_event_group_identifier(check_org_obj.events_url))
@@ -805,85 +796,97 @@ class RunUpdateTestCase(unittest.TestCase):
                     check_issues[check_org_obj.name][check_project_obj.name] = run_update.get_issues_for_project(check_project_obj)
 
         # confirm that the org and its children are in the database and save records to compare later
-        b_events = {}
-        b_stories = {}
-        b_projects = {}
-        b_issues = {}
-        b_labels = {}
-        for org_check in full_orgs_list:
-            filter = Organization.name == org_check['name']
-            organization = self.db.session.query(Organization).filter(filter).first()
+        db_events = {}
+        db_stories = {}
+        db_projects = {}
+        db_issues = {}
+        db_labels = {}
+        # verify that we have the number of organizations that we expect
+        self.assertEqual(len(check_orgs), len(self.db.session.query(Organization).all()))
+        #print "%s organization(s) with names %s" % (len(check_orgs), ", ".join(["'" + item['name'] + "'" for item in check_orgs]))
+        for org_dict in check_orgs:
+            # get the matching ORGANIZATION from the database
+            organization = self.db.session.query(Organization).filter(Organization.name == org_dict['name']).first()
             self.assertIsNotNone(organization)
-            self.assertEqual(organization.name, org_check['name'])
             self.assertTrue(organization.keep)
 
-            b_events[organization.name] = self.db.session.query(Event).filter(Event.organization_name == org_check['name']).all()
-            print "%s events with names %s" % (len(b_events[organization.name]), ", ".join(["'" + item.name + "'" for item in b_events[organization.name]]))
-            for event in b_events[organization.name]:
+            # get the matching EVENTS for this organization from the database
+            db_events[organization.name] = self.db.session.query(Event).filter(Event.organization_name == org_dict['name']).all()
+            # verify that we have the number of events that we expect
+            self.assertEqual(len(check_events[organization.name]), len(db_events[organization.name]))
+            #print "%s event(s) with names %s" % (len(db_events[organization.name]), ", ".join(["'" + item.name + "'" for item in db_events[organization.name]]))
+            for event_dict in check_events[organization.name]:
+                event = self.db.session.query(Event).filter(Event.event_url == event_dict['event_url'], Event.organization_name == event_dict['organization_name']).first()
+                self.assertIsNotNone(event)
                 self.assertTrue(event.keep)
 
-            b_stories[organization.name] = self.db.session.query(Story).filter(Story.organization_name == org_check['name']).all()
-            print "%s stories with names %s" % (len(b_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in b_stories[organization.name]]))
-            for story in b_stories[organization.name]:
+            # get the matching STORIES for this organization from the database
+            db_stories[organization.name] = self.db.session.query(Story).filter(Story.organization_name == org_dict['name']).all()
+            # verify that we have the number of stories we expect
+            self.assertEqual(len(check_stories[organization.name]), len(db_stories[organization.name]))
+            #print "%s story/stories with names %s" % (len(db_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in db_stories[organization.name]]))
+            for story_dict in check_stories[organization.name]:
+                story = self.db.session.query(Story).filter(Story.organization_name == story_dict['organization_name'], Story.link == story_dict['link']).first()
+                self.assertIsNotNone(story)
                 self.assertTrue(story.keep)
 
-            b_projects[organization.name] = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
-            print "%s projects with names %s" % (len(b_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in b_projects[organization.name]]))
-            b_issues[organization.name] = {}
-            b_labels[organization.name] = {}
-            for project in b_projects[organization.name]:
+            # get the matching PROJECTS for this organization from the database
+            db_projects[organization.name] = self.db.session.query(Project).filter(Project.organization_name == org_dict['name']).all()
+            # verify that we have the number of projects we expect
+            self.assertEqual(len(check_projects[organization.name]), len(db_projects[organization.name]))
+            #print "%s project(s) with names %s" % (len(db_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in db_projects[organization.name]]))
+            db_issues[organization.name] = {}
+            db_labels[organization.name] = {}
+
+            for project_dict in check_projects[organization.name]:
+                project = self.db.session.query(Project).filter(Project.name == project_dict['name'], Project.organization_name == project_dict['organization_name']).first()
+                self.assertIsNotNone(project)
                 self.assertTrue(project.keep)
-                b_issues[organization.name][project.name] = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
-                b_labels[organization.name][project.name] = {}
-                print "%s issues for project '%s' with names %s" % (len(b_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in b_issues[organization.name][project.name]]))
-                for issue in b_issues[organization.name][project.name]:
+
+                # get the matching ISSUES for this project from the database
+                db_issues[organization.name][project.name] = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
+                # verify that we have the number of issues we expect
+                self.assertEqual(len(check_issues[organization.name][project.name]), len(db_issues[organization.name][project.name]))
+                #print "%s issue(s) for project '%s' with names %s" % (len(db_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in db_issues[organization.name][project.name]]))
+                db_labels[organization.name][project.name] = {}
+
+                for issue_dict in check_issues[organization.name][project.name]:
+                    issue = self.db.session.query(Issue).filter(Issue.title == issue_dict['title'], Issue.project_id == project.id).first()
+                    self.assertIsNotNone(issue)
                     self.assertTrue(issue.keep)
-                    b_labels[organization.name][project.name][issue.title] = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
-                    print "%s labels for issue '%s' with names %s" % (len(b_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in b_labels[organization.name][project.name][issue.title]]))
 
-        print "++++ running update!"
+                    # get the matching LABELS for this issue from the database
+                    db_labels[organization.name][project.name][issue.title] = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
+                    # verify that we have the number of labels we expect
+                    self.assertEqual(len(issue_dict['labels']), len(db_labels[organization.name][project.name][issue.title]))
+                    #print "%s label(s) for issue '%s' with names %s" % (len(db_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in db_labels[organization.name][project.name][issue.title]]))
 
+                    for label_dict in issue_dict['labels']:
+                        label = self.db.session.query(Label).filter(Label.issue_id == issue.id, Label.name == label_dict['name']).first()
+                        self.assertIsNotNone(label)
+                        # labels don't have a 'keep' parameter
+
+    def test_orphaned_objects_deleted(self):
+        ''' Make sure that sub-organization objects are deleted when
+            they're no longer referenced in returned data
+        '''
+
+        # only get one organization
+        self.organization_count = 1
+        # when results_state is 'before' we get more events, stories, projects, issues, labels
+        self.results_state = 'before'
+
+        self.check_database_against_input()
+
+        #print "++++ running update!"
+
+        # when results_state is 'after' we get fewer events, stories, projects, issues, labels
         self.results_state = 'after'
 
-        with HTTMock(self.response_content):
-            run_update.main(org_sources=test_sources)
+        self.check_database_against_input()
 
-        a_events = {}
-        a_stories = {}
-        a_projects = {}
-        a_issues = {}
-        a_labels = {}
-        for org_check in full_orgs_list:
-            filter = Organization.name == org_check['name']
-            organization = self.db.session.query(Organization).filter(filter).first()
-            self.assertIsNotNone(organization)
-            self.assertEqual(organization.name, org_check['name'])
-            self.assertTrue(organization.keep)
-
-            a_events[organization.name] = self.db.session.query(Event).filter(Event.organization_name == org_check['name']).all()
-            print "%s events with names %s" % (len(a_events[organization.name]), ", ".join(["'" + item.name + "'" for item in a_events[organization.name]]))
-            for event in a_events[organization.name]:
-                self.assertTrue(event.keep)
-
-            a_stories[organization.name] = self.db.session.query(Story).filter(Story.organization_name == org_check['name']).all()
-            print "%s stories with names %s" % (len(a_stories[organization.name]), ", ".join(["'" + item.title + "'" for item in a_stories[organization.name]]))
-            for story in a_stories[organization.name]:
-                self.assertTrue(story.keep)
-
-            a_projects[organization.name] = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
-            print "%s projects with names %s" % (len(a_projects[organization.name]), ", ".join(["'" + item.name + "'" for item in a_projects[organization.name]]))
-            a_issues[organization.name] = {}
-            a_labels[organization.name] = {}
-            for project in a_projects[organization.name]:
-                self.assertTrue(project.keep)
-                a_issues[organization.name][project.name] = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
-                a_labels[organization.name][project.name] = {}
-                print "%s issues for project '%s' with names %s" % (len(a_issues[organization.name][project.name]), project.name, ", ".join(["'" + item.title + "'" for item in a_issues[organization.name][project.name]]))
-                for issue in a_issues[organization.name][project.name]:
-                    self.assertTrue(issue.keep)
-                    a_labels[organization.name][project.name][issue.title] = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
-                    print "%s labels for issue '%s' with names %s" % (len(a_labels[organization.name][project.name][issue.title]), issue.title, ", ".join(["'" + item.name + "'" for item in a_labels[organization.name][project.name][issue.title]]))
-
+        # reset to defaults
+        self.organization_count = 3
         self.results_state = 'before'
 
 
