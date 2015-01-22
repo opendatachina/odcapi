@@ -4,7 +4,7 @@ import os, unittest, tempfile, datetime, urllib2, logging
 from httmock import response, HTTMock
 from mock import Mock
 from time import time
-from re import match
+from re import match, sub
 
 root_logger = logging.getLogger()
 root_logger.disabled = True
@@ -14,6 +14,12 @@ class FakeResponse:
         self.text = text
 
 class RunUpdateTestCase(unittest.TestCase):
+
+    # change to modify the number of mock organizations returned
+    organization_count = 3
+    # change to switch between before and after states for results
+    # 'after' state returns fewer events,stories,projects,issues,labels
+    results_state = 'before'
 
     def setUp(self):
         os.environ['DATABASE_URL'] = 'postgres://postgres@localhost/civic_json_worker_test'
@@ -32,7 +38,12 @@ class RunUpdateTestCase(unittest.TestCase):
         self.db.session.close()
         self.db.drop_all()
 
-    def mock_rss_response(self):
+    def setup_mock_rss_response(self):
+        ''' This overwrites urllib2.urlopen to return a mock response, which stops
+            get_first_working_feed_link() in feeds.py from pulling data from the
+            internet
+        '''
+
         import urllib2
 
         rss_file=open('blog.xml')
@@ -42,44 +53,100 @@ class RunUpdateTestCase(unittest.TestCase):
         urllib2.urlopen.return_value.read = Mock(return_value=rss_content)
         return urllib2.urlopen
 
+    def get_raw_organization_list(self, count=3):
+        if type(count) is not int:
+            count = 3
+        lines = [u'''name,website,events_url,rss,projects_list_url'''.encode('utf8'), u'''Cöde for Ameriça,http://codeforamerica.org,http://www.meetup.com/events/Code-For-Charlotte/,http://www.codeforamerica.org/blog/feed/,http://example.com/cfa-projects.csv'''.encode('utf8'), u'''Code for America (2),,,,https://github.com/codeforamerica'''.encode('utf8'), u'''Code for America (3),,http://www.meetup.com/events/Code-For-Rhode-Island/,http://www.codeforamerica.org/blog/another/feed/,https://www.github.com/orgs/codeforamerica'''.encode('utf8')]
+        return '\n'.join(lines[0:count + 1])
+
     def response_content(self, url, request):
         import run_update
 
+        # csv file of project descriptions
         if url.geturl() == 'http://example.com/cfa-projects.csv':
-            return response(200, '''name,description,link_url,code_url,type,categories\n,"Thing for ""stuff"".",,https://github.com/codeforamerica/cityvoice,web service,"community engagement, housing"\nSouthBendVoices,,,https://github.com/codeforamerica/cityvoice,,''')
+            project_lines = ['''name,description,link_url,code_url,type,categories''', ''',"Thing for ""stuff"".",,https://github.com/codeforamerica/cityvoice,web service,"community engagement, housing"''', '''SouthBendVoices,,,https://github.com/codeforamerica/cityvoice,,''']
+            if self.results_state == 'before':
+                return response(200, '''\n'''.join(project_lines[0:3]))
+            elif self.results_state == 'after':
+                return response(200, '''\n'''.join(project_lines[0:2]))
 
+        # csv file of organization descriptions
         elif "docs.google.com" in url:
-            return response(200, u'''name,website,events_url,rss,projects_list_url\nCöde for Ameriça,http://codeforamerica.org,http://www.meetup.com/events/Code-For-Charlotte/,http://www.codeforamerica.org/blog/feed/,http://example.com/cfa-projects.csv\nCode for America (2),,,,https://github.com/codeforamerica\nCode for America (3),,,,https://www.github.com/orgs/codeforamerica'''.encode('utf8'))
+            return response(200, self.get_raw_organization_list(self.organization_count))
 
+        # json of project description
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
             return response(200, '''{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
 
+        # json of project contributors
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/contributors':
             return response(200, '''[ { "login": "daguar", "avatar_url": "https://avatars.githubusercontent.com/u/994938", "url": "https://api.github.com/users/daguar", "html_url": "https://github.com/daguar", "contributions": 518 } ]''')
 
+        # json of project participation
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/stats/participation':
             return response(200, '''{ "all": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 23, 9, 4, 0, 77, 26, 7, 17, 53, 59, 37, 40, 0, 47, 59, 55, 118, 11, 8, 3, 3, 30, 0, 1, 1, 4, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1 ], "owner": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] }''')
 
+        # json of project issues
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
-            return response(200, ''' [ {"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ { "color" : "84b6eb", "name" : "enhancement", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/enhancement"} ], "body" : "WHATEVER"} ] ''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
+            # build issues dynamically based on results_state value
+            issue_lines = ['''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''', '''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/211","title": "More important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''']
+            label_lines = ['''{ "color" : "84b6eb", "name" : "enhancement", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/enhancement"}''', '''{ "color" : "84b6eb", "name" : "question", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/question"}''']
+            issue_lines_before = [sub('xxx', ','.join(label_lines[0:2]), issue_lines[0]), sub('xxx', ','.join(label_lines[0:2]), issue_lines[1])]
+            issue_lines_after = [sub('xxx', ','.join(label_lines[0:1]), issue_lines[0])]
+            response_etag = {'ETag': '8456bc53d4cf6b78779ded3408886f82'}
 
+            response_before = ''' [ ''' + ', '.join(issue_lines_before) + ''' ] '''
+            response_after = ''' [ ''' + ', '.join(issue_lines_after) + ''' ] '''
+
+            if self.results_state == 'before':
+                return response(200, ''' [ ''' + ', '.join(issue_lines_before) + ''' ] ''', response_etag)
+            if self.results_state == 'after':
+                return response(200, ''' [ ''' + ', '.join(issue_lines_after) + ''' ] ''', response_etag)
+
+        # json of contributor profile
         elif url.geturl() == 'https://api.github.com/users/daguar':
             return response(200, '''{ "login": "daguar", "avatar_url": "https://gravatar.com/avatar/whatever", "html_url": "https://github.com/daguar", "name": "Dave Guarino", "company": "", "blog": null, "location": "Oakland, CA", "email": "dave@codeforamerica.org",  }''')
 
+        # json of project descriptions
         elif url.geturl() == 'https://api.github.com/users/codeforamerica/repos':
             return response(200, '''[{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }]''', headers=dict(Link='<https://api.github.com/user/337792/repos?page=2>; rel="next", <https://api.github.com/user/337792/repos?page=2>; rel="last"'))
 
+        # json of page two of project descriptions (empty)
         elif url.geturl() == 'https://api.github.com/user/337792/repos?page=2':
             return response(200, '''[ ]''', headers=dict(Link='<https://api.github.com/user/337792/repos?page=1>; rel="prev", <https://api.github.com/user/337792/repos?page=1>; rel="first"'))
 
+        # json of meetup events
         elif match(r'https:\/\/api\.meetup\.com\/2\/events\?status=past,upcoming&format=json&group_urlname=Code-For-Charlotte&key=', url.geturl()):
-            events_file=open('meetup_events.json')
+            events_filename = 'meetup_events.json'
+            if self.results_state == 'after':
+                events_filename = 'meetup_events_fewer.json'
+
+            events_file=open(events_filename)
             events_content = events_file.read()
             events_file.close()
             return response(200, events_content)
 
+        # json of alternate meetup events
+        elif match(r'https:\/\/api\.meetup\.com\/2\/events\?status=past,upcoming&format=json&group_urlname=Code-For-Rhode-Island&key=', url.geturl()):
+            events_file=open('meetup_events_another.json')
+            events_content = events_file.read()
+            events_file.close()
+            return response(200, events_content)
+
+        # xml of blog feed (stories)
         elif url.geturl() == 'http://www.codeforamerica.org/blog/feed/' or match(r'http:\/\/.+\.rss', url.geturl()):
-            stories_file=open('blog.xml')
+            stories_filename = 'blog.xml'
+            if self.results_state == 'after':
+                stories_filename = 'blog_fewer.xml'
+
+            stories_file=open(stories_filename)
+            stories_content = stories_file.read()
+            stories_file.close()
+            return response(200, stories_content)
+
+        # xml of alternate blog feed
+        elif url.geturl() == 'http://www.codeforamerica.org/blog/another/feed/':
+            stories_file=open('blog_another.xml')
             stories_content = stories_file.read()
             stories_file.close()
             return response(200, stories_content)
@@ -90,6 +157,9 @@ class RunUpdateTestCase(unittest.TestCase):
     def test_import(self):
         ''' Add one sample organization with two projects and issues, verify that it comes back.
         '''
+
+        self.setup_mock_rss_response()
+
         with HTTMock(self.response_content):
             import run_update
             run_update.main(org_sources="test_org_sources.csv")
@@ -120,7 +190,7 @@ class RunUpdateTestCase(unittest.TestCase):
         filter = Issue.project_id == project.id
         issue = self.db.session.query(Issue).filter(filter).first()
         self.assertIsNotNone(issue)
-        self.assertEqual(issue.title,u'Important cityvoice issue')
+        self.assertEqual(issue.title,u'More important cityvoice issue')
 
     def test_main_with_good_new_data(self):
         ''' When current organization data is not the same set as existing, saved organization data,
@@ -135,7 +205,7 @@ class RunUpdateTestCase(unittest.TestCase):
         old_issue = IssueFactory(title=u'Old Issue', project_id=1)
         self.db.session.flush()
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             import run_update
@@ -269,7 +339,7 @@ class RunUpdateTestCase(unittest.TestCase):
 
         logging.error = Mock()
 
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(response_content):
             import run_update
@@ -351,7 +421,7 @@ class RunUpdateTestCase(unittest.TestCase):
                 raise Exception('Asked for unknown URL ' + url.geturl())
 
         logging.error = Mock()
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         with HTTMock(response_content):
             import run_update
@@ -363,7 +433,7 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         Test that two most recent blog posts are in the db.
         '''
-        self.mock_rss_response()
+        self.setup_mock_rss_response()
 
         from factories import OrganizationFactory
         organization = OrganizationFactory(name=u'Code for America')
@@ -440,6 +510,7 @@ class RunUpdateTestCase(unittest.TestCase):
             self.assertEqual(projects[0]['name'], "Hack Task Aggregator")
             self.assertEqual(projects[0]['description'], 'Web application to aggregate tasks across projects that are identified for "hacking".')
 
+    # :TODO: fails if you run it solo
     def test_non_github_projects(self):
         ''' Test that non github and non code projects get last_updated timestamps.
         '''
@@ -544,10 +615,14 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Project
         import run_update
 
+        self.setup_mock_rss_response()
+
         with HTTMock(self.response_content):
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
             self.db.session.query(Project).update({"last_updated":None})
             run_update.main(org_name=u"C\xf6de for Ameri\xe7a", org_sources="test_org_sources.csv")
+
+        # :TODO: no assertion?
 
     def test_orphan_labels(self):
         ''' We keep getting orphan labels,
@@ -556,6 +631,8 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Label
         import run_update
         
+        self.setup_mock_rss_response()
+
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
             run_update.main(org_sources="test_org_sources.csv")
@@ -569,6 +646,8 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         from app import Label
         import run_update
+
+        self.setup_mock_rss_response()
 
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
@@ -589,8 +668,215 @@ class RunUpdateTestCase(unittest.TestCase):
 
         warnings.filterwarnings('error')
 
+        self.setup_mock_rss_response()
+
         with HTTMock(self.response_content):
             run_update.main(org_sources="test_org_sources.csv")
+
+    def test_orphaned_organization_deleted(self):
+        ''' Make sure that an organization and all its children are deleted when
+            the organization is no longer included in the returned csv
+        '''
+        from app import Organization, Project, Event, Story, Issue, Label
+        import run_update
+
+        test_sources = "test_org_sources.csv"
+        self.organization_count = 3
+        full_orgs_list = []
+
+        self.setup_mock_rss_response()
+
+        with HTTMock(self.response_content):
+            # get the orgs list for comparison
+            full_orgs_list = run_update.get_organizations(test_sources)
+            # run the update on the same orgs
+            run_update.main(org_sources=test_sources)
+
+        # confirm that the orgs in the list are in the database
+        for org_check in full_orgs_list:
+            filter = Organization.name == org_check['name']
+            organization = self.db.session.query(Organization).filter(filter).first()
+            self.assertIsNotNone(organization)
+            self.assertEqual(organization.name, org_check['name'])
+            self.assertTrue(organization.keep)
+
+
+        # reset with just two organizations
+        self.organization_count = 2
+        partial_orgs_list = []
+        with HTTMock(self.response_content):
+            partial_orgs_list = run_update.get_organizations(test_sources)
+
+        # save details about the organization(s) and their children who will be orphaned
+        orphaned_org_names = list(set([item['name'] for item in full_orgs_list]) - set([item['name'] for item in partial_orgs_list]))
+        orphaned_issue_ids = []
+        orphaned_label_ids = []
+        for org_name in orphaned_org_names:
+            projects = self.db.session.query(Project).filter(Project.organization_name == org_check['name']).all()
+            for project in projects:
+                issues = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
+                for issue in issues:
+                    orphaned_issue_ids.append(issue.id)
+                    labels = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
+                    for label in labels:
+                        orphaned_label_ids.append(label.id)
+
+        with HTTMock(self.response_content):
+            run_update.main(org_sources=test_sources)
+
+        # confirm that the two organizations are in the database
+        for org_check in partial_orgs_list:
+            filter = Organization.name == org_check['name']
+            organization = self.db.session.query(Organization).filter(filter).first()
+            self.assertIsNotNone(organization)
+            self.assertEqual(organization.name, org_check['name'])
+            self.assertTrue(organization.keep)
+
+        # confirm that the orphaned organization and its children are no longer in the database
+        for org_name_check in orphaned_org_names:
+            filter = Organization.name == org_name_check
+            organization = self.db.session.query(Organization).filter(filter).first()
+            self.assertIsNone(organization)
+
+            events = self.db.session.query(Event).filter(Event.organization_name == org_name_check).all()
+            self.assertEqual(len(events), 0)
+
+            stories = self.db.session.query(Story).filter(Story.organization_name == org_name_check).all()
+            self.assertEqual(len(stories), 0)
+
+            projects = self.db.session.query(Project).filter(Project.organization_name == org_name_check).all()
+            self.assertEqual(len(projects), 0)
+
+            for issue_id in orphaned_issue_ids:
+                issue = self.db.session.query(Issue).filter(Issue.id == issue_id).first()
+                self.assertIsNone(issue)
+
+            for label_id in orphaned_label_ids:
+                label = self.db.session.query(Label).filter(Label.id == label_id).first()
+                self.assertIsNone(label)
+
+        # reset to three projects
+        self.organization_count = 3
+
+    def check_database_against_input(self):
+        ''' verify that what's in the database matches the input
+        '''
+        from app import Organization, Project, Event, Story, Issue, Label
+        import run_update
+
+        test_sources = 'test_org_sources.csv'
+
+        self.setup_mock_rss_response()
+
+        # for checking data from the source against what's in the database
+        check_orgs = []
+        check_events = {}
+        check_stories = {}
+        check_projects = {}
+        check_issues = {}
+
+        with HTTMock(self.response_content):
+            # run the update
+            run_update.main(org_sources=test_sources)
+
+            # get raw data from the source to compare with what's in the database
+            check_orgs = run_update.get_organizations(test_sources)
+            for check_org in check_orgs:
+                check_org_obj = Organization(**check_org)
+                check_events[check_org_obj.name] = run_update.get_meetup_events(check_org_obj, run_update.get_event_group_identifier(check_org_obj.events_url))
+                check_stories[check_org_obj.name] = run_update.get_stories(check_org_obj)
+                check_projects[check_org_obj.name] = run_update.get_projects(check_org_obj)
+                check_issues[check_org_obj.name] = {}
+                for check_project in check_projects[check_org_obj.name]:
+                    check_project_obj = Project(**check_project)
+                    check_issues[check_org_obj.name][check_project_obj.name] = run_update.get_issues_for_project(check_project_obj)
+
+        # confirm that the org and its children are in the database and save records to compare later
+        db_events = {}
+        db_stories = {}
+        db_projects = {}
+        db_issues = {}
+        db_labels = {}
+        # verify that we have the number of organizations that we expect
+        self.assertEqual(len(check_orgs), len(self.db.session.query(Organization).all()))
+        for org_dict in check_orgs:
+            # get the matching ORGANIZATION from the database
+            organization = self.db.session.query(Organization).filter(Organization.name == org_dict['name']).first()
+            self.assertIsNotNone(organization)
+            self.assertTrue(organization.keep)
+
+            # get the matching EVENTS for this organization from the database
+            db_events[organization.name] = self.db.session.query(Event).filter(Event.organization_name == org_dict['name']).all()
+            # verify that we have the number of events that we expect
+            self.assertEqual(len(check_events[organization.name]), len(db_events[organization.name]))
+            for event_dict in check_events[organization.name]:
+                event = self.db.session.query(Event).filter(Event.event_url == event_dict['event_url'], Event.organization_name == event_dict['organization_name']).first()
+                self.assertIsNotNone(event)
+                self.assertTrue(event.keep)
+
+            # get the matching STORIES for this organization from the database
+            db_stories[organization.name] = self.db.session.query(Story).filter(Story.organization_name == org_dict['name']).all()
+            # verify that we have the number of stories we expect
+            self.assertEqual(len(check_stories[organization.name]), len(db_stories[organization.name]))
+            for story_dict in check_stories[organization.name]:
+                story = self.db.session.query(Story).filter(Story.organization_name == story_dict['organization_name'], Story.link == story_dict['link']).first()
+                self.assertIsNotNone(story)
+                self.assertTrue(story.keep)
+
+            # get the matching PROJECTS for this organization from the database
+            db_projects[organization.name] = self.db.session.query(Project).filter(Project.organization_name == org_dict['name']).all()
+            # verify that we have the number of projects we expect
+            self.assertEqual(len(check_projects[organization.name]), len(db_projects[organization.name]))
+            db_issues[organization.name] = {}
+            db_labels[organization.name] = {}
+
+            for project_dict in check_projects[organization.name]:
+                project = self.db.session.query(Project).filter(Project.name == project_dict['name'], Project.organization_name == project_dict['organization_name']).first()
+                self.assertIsNotNone(project)
+                self.assertTrue(project.keep)
+
+                # get the matching ISSUES for this project from the database
+                db_issues[organization.name][project.name] = self.db.session.query(Issue).filter(Issue.project_id == project.id).all()
+                # verify that we have the number of issues we expect
+                self.assertEqual(len(check_issues[organization.name][project.name]), len(db_issues[organization.name][project.name]))
+                db_labels[organization.name][project.name] = {}
+
+                for issue_dict in check_issues[organization.name][project.name]:
+                    issue = self.db.session.query(Issue).filter(Issue.title == issue_dict['title'], Issue.project_id == project.id).first()
+                    self.assertIsNotNone(issue)
+                    self.assertTrue(issue.keep)
+
+                    # get the matching LABELS for this issue from the database
+                    db_labels[organization.name][project.name][issue.title] = self.db.session.query(Label).filter(Label.issue_id == issue.id).all()
+                    # verify that we have the number of labels we expect
+                    self.assertEqual(len(issue_dict['labels']), len(db_labels[organization.name][project.name][issue.title]))
+
+                    for label_dict in issue_dict['labels']:
+                        label = self.db.session.query(Label).filter(Label.issue_id == issue.id, Label.name == label_dict['name']).first()
+                        self.assertIsNotNone(label)
+                        # labels don't have a 'keep' parameter
+
+    def test_orphaned_objects_deleted(self):
+        ''' Make sure that sub-organization objects are deleted when
+            they're no longer referenced in returned data
+        '''
+
+        # only get one organization
+        self.organization_count = 1
+        # when results_state is 'before' we get more events, stories, projects, issues, labels
+        self.results_state = 'before'
+
+        self.check_database_against_input()
+
+        # when results_state is 'after' we get fewer events, stories, projects, issues, labels
+        self.results_state = 'after'
+
+        self.check_database_against_input()
+
+        # reset to defaults
+        self.organization_count = 3
+        self.results_state = 'before'
+
 
 if __name__ == '__main__':
     unittest.main()

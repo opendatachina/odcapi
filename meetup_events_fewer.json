@@ -1,0 +1,87 @@
+{
+  "results": [
+  {
+    "rsvp_limit": 50,
+    "status": "past",
+    "visibility": "public",
+    "maybe_rsvp_count": 0,
+    "venue": {
+      "id": 1394669,
+      "zip": "28205",
+      "lon": -80.812366,
+      "repinned": false,
+      "name": "Amelie's Bakery",
+      "state": "NC",
+      "address_1": "2424 N Davidson St",
+      "lat": 35.241541,
+      "city": "Charlotte",
+      "country": "us"
+    },
+    "id": "156302132",
+    "utc_offset": -18000000,
+    "time": 1389916800000,
+    "waitlist_count": 0,
+    "updated": 1390198416000,
+    "yes_rsvp_count": 48,
+    "created": 1387484285000,
+    "event_url": "http://www.meetup.com/Code-For-Charlotte/events/156302132/",
+    "description": "<p>Hi, everybody! Luke Norris, of Code for America, will be joining us for the inaugural meeting of our merry band of civic hackers. Mark your calendars for a chance to get involved, and to learn more about Code for America in Charlotte during 2014.</p>",
+    "how_to_find_us": "We will be in the private area in the middle of the main dining space.  The Versailles and Salon rooms.",
+    "name": "Organizational meeting",
+    "headcount": 0,
+      "rating": {
+      "count": 7,
+      "average": 4.710000038146973
+    },
+    "group": {
+      "id": 10916672,
+      "group_lat": 35.220001220703125,
+      "name": "Code For Charlotte",
+      "group_lon": -80.79000091552734,
+      "join_mode": "approval",
+      "urlname": "Code-For-Charlotte",
+      "who": "Citizens"
+    }
+  },
+  {
+    "status": "past",
+    "visibility": "public",
+    "maybe_rsvp_count": 0,
+    "venue": {
+      "id": 17502142,
+      "lon": -80.846367,
+      "repinned": false,
+      "name": "Packard Place",
+      "state": "NC",
+      "address_1": "222 S. Church Street",
+      "lat": 35.227127,
+      "city": "Charlotte",
+      "country": "us"
+    },
+    "id": "167558762",
+    "utc_offset": -18000000,
+    "duration": 10800000,
+    "time": 1394058600000,
+    "waitlist_count": 0,
+    "updated": 1394125991000,
+    "yes_rsvp_count": 38,
+    "created": 1393013397000,
+    "event_url": "http://www.meetup.com/Code-For-Charlotte/events/167558762/",
+    "description": "<p>Let's get this ball rolling. We've had two informational based meet up and now it is time to get our hands in it. We will spend the first part brainstorming solutions and enhancements projects that we can get started on, then we will start Prototyping and mapping them out. You will have time to work and discuss and form teams. Bring your computers. Let's get to hacking!</p>",
+    "name": "Brigade Ideation (Brainstorm and Prototyping) Session.",
+    "headcount": 0,
+    "rating": {
+      "count": 3,
+      "average": 4.670000076293945
+    },
+    "group": {
+      "id": 10916672,
+      "group_lat": 35.220001220703125,
+      "name": "Code For Charlotte",
+      "group_lon": -80.79000091552734,
+      "join_mode": "approval",
+      "urlname": "Code-For-Charlotte",
+      "who": "Citizens"
+    }
+  }]
+}
