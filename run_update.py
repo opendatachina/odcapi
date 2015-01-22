@@ -508,6 +508,11 @@ def get_issues(org_name):
 
         # Get github issues api url
         _, host, path, _, _, _ = urlparse(project.code_url)
+
+        # Only check issues if its a github project
+        if host != 'github.com':
+            continue
+
         issues_url = 'https://api.github.com/repos' + path + '/issues'
 
         # Ping github's api for project issues
