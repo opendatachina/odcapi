@@ -26,6 +26,9 @@ To get the information for the CfAPI, Code for America maintains a [list of civi
 * <a href="http://www.codeforamerica.org/geeks/civicissues/embed">The Civic Tech Issue Finder
 <br/><img src="http://i.imgur.com/9aWV25e.png" width="400px"/></a>
 
+* <a href="https://twitter.com/civicissues">The Civic Issue Twitter Bot
+<br/><img src="http://i.imgur.com/Du9pLsu.png" width="400px"/></a>
+
 * Lots of different Brigades websites
 
 
