@@ -64,7 +64,7 @@ class RunUpdateTestCase(unittest.TestCase):
 
         # csv file of project descriptions
         if url.geturl() == 'http://example.com/cfa-projects.csv':
-            project_lines = ['''name,description,link_url,code_url,type,categories''', ''',"Thing for ""stuff"".",,https://github.com/codeforamerica/cityvoice,web service,"community engagement, housing"''', '''SouthBendVoices,,,https://github.com/codeforamerica/cityvoice,,''']
+            project_lines = ['''name,description,link_url,code_url,type,categories''', ''',,,https://github.com/codeforamerica/cityvoice,,''',''',,,https://github.com/codeforamerica/bizfriendly-web,,''']
             if self.results_state == 'before':
                 return response(200, '''\n'''.join(project_lines[0:3]))
             elif self.results_state == 'after':
@@ -78,16 +78,20 @@ class RunUpdateTestCase(unittest.TestCase):
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
             return response(200, '''{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
 
+        # json of project description
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web':
+            return response(200, ''' { "id": 11137392, "name": "bizfriendly-web", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792?v=3", "html_url": "https://github.com/codeforamerica", "type": "Organization" }, "html_url": "https://github.com/codeforamerica/bizfriendly-web", "description": "An online service that teaches small business owners how to use the internet to better run their businesses.", "url": "https://api.github.com/repos/codeforamerica/bizfriendly-web", "contributors_url": "https://api.github.com/repos/codeforamerica/bizfriendly-web/contributors", "created_at": "2013-07-02T23:14:10Z", "updated_at": "2014-11-02T18:55:33Z", "pushed_at": "2014-10-14T21:55:04Z", "homepage": "http://bizfriend.ly", "stargazers_count": 17, "watchers_count": 17, "language": "JavaScript", "forks_count": 21, "open_issues": 31 } ''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
+
         # json of project contributors
-        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/contributors':
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/contributors' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/contributors':
             return response(200, '''[ { "login": "daguar", "avatar_url": "https://avatars.githubusercontent.com/u/994938", "url": "https://api.github.com/users/daguar", "html_url": "https://github.com/daguar", "contributions": 518 } ]''')
 
         # json of project participation
-        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/stats/participation':
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/stats/participation' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/stats/participation':
             return response(200, '''{ "all": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 23, 9, 4, 0, 77, 26, 7, 17, 53, 59, 37, 40, 0, 47, 59, 55, 118, 11, 8, 3, 3, 30, 0, 1, 1, 4, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1 ], "owner": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] }''')
 
         # json of project issues
-        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/issues':
             # build issues dynamically based on results_state value
             issue_lines = ['''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''', '''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/211","title": "More important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''']
             label_lines = ['''{ "color" : "84b6eb", "name" : "enhancement", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/enhancement"}''', '''{ "color" : "84b6eb", "name" : "question", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/question"}''']
@@ -175,10 +179,10 @@ class RunUpdateTestCase(unittest.TestCase):
         self.assertEqual(organization.name,u'Cöde for Ameriça')
 
         # check for the one project
-        filter = Project.name == u'SouthBendVoices'
+        filter = Project.name == u'bizfriendly-web'
         project = self.db.session.query(Project).filter(filter).first()
         self.assertIsNotNone(project)
-        self.assertEqual(project.name,u'SouthBendVoices')
+        self.assertEqual(project.name,u'bizfriendly-web')
 
         # check for the other project
         filter = Project.name == u'cityvoice'
@@ -242,9 +246,9 @@ class RunUpdateTestCase(unittest.TestCase):
         self.assertEqual(organization.name, u'Cöde for Ameriça')
 
         # check for the one project
-        filter = Project.name == u'SouthBendVoices'
+        filter = Project.name == u'bizfriendly-web'
         project = self.db.session.query(Project).filter(filter).first()
-        self.assertEqual(project.name,u'SouthBendVoices')
+        self.assertEqual(project.name,u'bizfriendly-web')
 
         # check for the one issue
         filter = Issue.title == u'Important cityvoice issue'
