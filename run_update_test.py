@@ -155,6 +155,12 @@ class RunUpdateTestCase(unittest.TestCase):
             stories_file.close()
             return response(200, stories_content)
 
+        elif url.geturl() == 'http://codeforphilly.org/projects.csv':
+                return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","http://google.com","",""''')
+
+        elif url.geturl() == 'http://openaustin.org/projects.csv':
+                return response(200, '''name,description,link_url,code_url,type,categories\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",,,web service,"project management, civic hacking"''')
+
         else:
             raise Exception('Asked for unknown URL ' + url.geturl())
 
@@ -283,29 +289,21 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' When github returns a 404 when trying to retrieve project data,
             an error message should be logged.
         '''
-        def response_content(url, request):
+        def overwrite_response_content(url, request):
             import run_update
 
-            if url.geturl() == 'http://example.com/cfa-projects.csv':
-                return response(200, '''name,description,link_url,code_url,type,categories\n,,http://google.com,https://github.com/codeforamerica/cityvoice,,''')
-
-            elif "docs.google.com" in url:
-                return response(200, '''name,website,events_url,rss,projects_list_url\nCode for America,,,,http://example.com/cfa-projects.csv''')
-
-            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
+            if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
                 return response(404, '''Not Found!''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
 
             elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
                 return response(404, '''Not Found!''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
 
-            else:
-                raise Exception('Asked for unknown URL ' + url.geturl())
-
         logging.error = Mock()
 
-        with HTTMock(response_content):
-            import run_update
-            run_update.main(org_sources="test_org_sources.csv")
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('https://api.github.com/repos/codeforamerica/cityvoice doesn\'t exist.')
 
@@ -495,47 +493,33 @@ class RunUpdateTestCase(unittest.TestCase):
         Testing weird csv dialects we've encountered
         '''
         from factories import OrganizationFactory
-        philly = OrganizationFactory(name='Code for Philly')
-        gdocs = OrganizationFactory(projects_list_url="http://www.gdocs.com/projects.csv")
+        philly = OrganizationFactory(name=u'Code for Philly', projects_list_url=u'http://codeforphilly.org/projects.csv')
+        austin = OrganizationFactory(name=u'Open Austin', projects_list_url=u'http://openaustin.org/projects.csv')
 
-        def response_content(url, request):
-            if url.netloc == 'www.civicorganization1.com':
-                return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","","",""''')
-            if url.netloc == 'www.gdocs.com':
-                return response(200, '''name,description,link_url,code_url,type,categories\r\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",http://open-austin.github.io/hack-task-aggregator/public/index.html,,web service,"project management, civic hacking"''')
-
-        with HTTMock(response_content):
+        with HTTMock(self.response_content):
             import run_update
             projects = run_update.get_projects(philly)
             self.assertEqual(projects[0]['name'], "OpenPhillyGlobe")
             self.assertEqual(projects[0]['description'], 'Google Earth for Philadelphia" with open source and open transit data."')
 
-            projects = run_update.get_projects(gdocs)
+            projects = run_update.get_projects(austin)
             self.assertEqual(projects[0]['name'], "Hack Task Aggregator")
             self.assertEqual(projects[0]['description'], 'Web application to aggregate tasks across projects that are identified for "hacking".')
 
-    # :TODO: fails if you run it solo
     def test_non_github_projects(self):
         ''' Test that non github and non code projects get last_updated timestamps.
         '''
         from factories import OrganizationFactory
-        whatever = OrganizationFactory(name='Whatever')
-        gdocs = OrganizationFactory(projects_list_url="http://www.gdocs.com/projects.csv")
+        philly = OrganizationFactory(name=u'Code for Philly', projects_list_url=u'http://codeforphilly.org/projects.csv')
+        austin = OrganizationFactory(name=u'Open Austin', projects_list_url=u'http://openaustin.org/projects.csv')
 
-        def response_content(url, request):
-            if url.netloc == 'www.civicorganization6.com':
-                return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","http://google.com","",""''')
-            if url.netloc == 'www.gdocs.com':
-                return response(200, '''name,description,link_url,code_url,type,categories\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",,,web service,"project management, civic hacking"''')
-
-
-        with HTTMock(response_content):
+        with HTTMock(self.response_content):
             import run_update
-            projects = run_update.get_projects(whatever)
+            projects = run_update.get_projects(philly)
             self.assertEqual(projects[0]['name'], "OpenPhillyGlobe")
             self.assertEqual(projects[0]['last_updated'], datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z"))
 
-            projects = run_update.get_projects(gdocs)
+            projects = run_update.get_projects(austin)
             self.assertEqual(projects[0]['name'], "Hack Task Aggregator")
             self.assertEqual(projects[0]['last_updated'], datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z"))
 
