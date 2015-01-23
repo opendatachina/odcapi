@@ -13,7 +13,7 @@ import urllib2
 import feedparser
 
 from BeautifulSoup import BeautifulSoup
-
+from socket import error as SocketError
 
 # list of attributes that can have a feed link in the <HEAD> section
 # so we can identify at least one in a page
