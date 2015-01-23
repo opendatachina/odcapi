@@ -397,7 +397,13 @@ def update_project_info(project):
         # If project has not been modified, return
         elif got.status_code == 304:
             logging.info('Project %s has not been modified since last update', repo_url)
-            return project
+            if existing_project:
+                # make sure we keep the project
+                # :::here (project/true)
+                existing_project.keep = True
+                db.session.add(existing_project)
+                db.session.commit()
+            return None
 
         # Save last_updated time header for future requests
         project['last_updated'] = got.headers['Last-Modified']
