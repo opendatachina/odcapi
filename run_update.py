@@ -362,10 +362,11 @@ def update_project_info(project):
         if github_throttling:
             return project
 
-        previous_project = db.session.query(Project).filter(Project.code_url == project['code_url']).first()
-        if previous_project:
-            if previous_project.last_updated:
-                last_updated = datetime.strftime(previous_project.last_updated, "%a, %d %b %Y %H:%M:%S GMT")
+        # :TODO: filter on something other than just code_url (org name & project name)
+        existing_project = db.session.query(Project).filter(Project.code_url == project['code_url']).first()
+        if existing_project:
+            if existing_project.last_updated:
+                last_updated = datetime.strftime(existing_project.last_updated, "%a, %d %b %Y %H:%M:%S GMT")
                 got = get_github_api(repo_url, headers={"If-Modified-Since": last_updated})
             else:
                 # In rare cases, a project can be saved with out a last_updated.
@@ -396,7 +397,7 @@ def update_project_info(project):
         # If project has not been modified, return
         elif got.status_code == 304:
             logging.info('Project %s has not been modified since last update', repo_url)
-            return None
+            return project
 
         # Save last_updated time header for future requests
         project['last_updated'] = got.headers['Last-Modified']
@@ -498,12 +499,13 @@ def get_issues(org_name):
     # Flush the current db session to save projects added in current run
     db.session.flush()
 
-    # Only grab this organizations projects
+    # Only grab this organization's projects
     projects = db.session.query(Project).filter(Project.organization_name == org_name).all()
 
     # Populate issues for each project
     for project in projects:
-        # Mark this project's issues for deletion :::here (project)
+        # Mark this project's issues for deletion
+        # :::here (issue/false)
         db.session.execute(db.update(Issue, values={'keep': False}).where(Issue.project_id == project.id))
 
         # Get github issues api url
@@ -511,11 +513,13 @@ def get_issues(org_name):
         issues_url = 'https://api.github.com/repos' + path + '/issues'
 
         # Ping github's api for project issues
+        # SELECT name, organization_name FROM project WHERE last_updated_issues IS NULL;
+        # :TODO: non-github projects are hitting here and shouldn't be!
         got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
         
         # Verify if content has not been modified since last run
         if got.status_code == 304:
-            # :::here (issue)
+            # :::here (issue/true)
             db.session.execute(db.update(Issue, values={'keep': True}).where(Issue.project_id == project.id))
             logging.info('Issues %s have not changed since last update', issues_url)
 
@@ -523,6 +527,7 @@ def get_issues(org_name):
             # Update project's last_updated_issue field
             project.last_updated_issues = unicode(got.headers['ETag'])
             db.session.add(project)
+            db.session.commit()
 
             responses = get_adjoined_json_lists(got, headers={'If-None-Match': project.last_updated_issues})
 
@@ -596,6 +601,7 @@ def save_organization_info(session, org_dict):
     filter = Organization.name == org_dict['name']
     existing_org = session.query(Organization).filter(filter).first()
 
+    # :::here (organization/true)
     # If this is a new organization, save and return it. The keep parameter is True by default.
     if not existing_org:
         new_organization = Organization(**org_dict)
@@ -603,8 +609,9 @@ def save_organization_info(session, org_dict):
         session.commit()
         return new_organization
 
-    # Mark the existing organization for safekeeping
+    # Timestamp the existing organization
     existing_org.last_updated = time()
+    # :::here (organization/true)
     existing_org.keep = True
 
     # Update existing organization details.
@@ -631,16 +638,16 @@ def save_project_info(session, proj_dict):
         session.add(new_project)
         return new_project
 
-    # Mark the existing project for safekeeping.
-    # :::here (project)
+    # Preserve the existing project
+    # :::here (project/true)
     existing_project.keep = True
 
     # Update existing project details
     for (field, value) in proj_dict.items():
         setattr(existing_project, field, value)
 
-    # Flush existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
-    session.flush()
+    # Commit existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
+    session.commit()
 
     return existing_project
 
@@ -660,7 +667,8 @@ def save_issue(session, issue):
         session.commit()
     
     else:
-        # Mark the existing issue for safekeeping. :::here (issue)
+        # Preserve the existing issue. 
+        # :::here (issue/true)
         existing_issue.keep = True
         # Update existing issue details
         existing_issue.title = issue['title']
@@ -713,7 +721,8 @@ def save_event_info(session, event_dict):
         session.add(new_event)
         return new_event
 
-    # Mark the existing event for safekeeping. :::here (event)
+    # Preserve the existing event.
+    # :::here (event/true)
     existing_event.keep = True
 
     # Update existing event details
@@ -740,7 +749,8 @@ def save_story_info(session, story_dict):
         session.add(new_story)
         return new_story
 
-    # Mark the existing story for safekeeping. :::here (story)
+    # Preserve the existing story.
+    # :::here (story/true)
     existing_story.keep = True
 
     # Update existing story details
@@ -764,7 +774,7 @@ def get_event_group_identifier(events_url):
 def main(org_name=None, org_sources=None):
     ''' Run update over all organizations. Optionally, update just one.
     '''
-    # Keep a set of fresh organization names.
+    # Collect a set of fresh organization names.
     organization_names = set()
 
     # Retrieve all organizations and shuffle the list in place.
@@ -793,7 +803,7 @@ def main(org_name=None, org_sources=None):
             organization_names.add(org_info['name'])
 
             # Mark everything associated with this organization for deletion at first.
-            # :::here (event, story, project, organization)
+            # :::here (event/false, story/false, project/false, organization/false)
             db.session.execute(db.update(Event, values={'keep': False}).where(Event.organization_name == org_info['name']))
             db.session.execute(db.update(Story, values={'keep': False}).where(Story.organization_name == org_info['name']))
             db.session.execute(db.update(Project, values={'keep': False}).where(Project.organization_name == org_info['name']))
@@ -845,7 +855,8 @@ def main(org_name=None, org_sources=None):
                 save_issue(db.session, issue)
                 save_labels(db.session, issue)
 
-            # Remove everything marked for deletion. :::here (event, story, project, issue, organization)
+            # Remove everything marked for deletion.
+            # :::here (event/delete, story/delete, project/delete, issue/delete, organization/delete)
             db.session.query(Event).filter(Event.keep == False).delete()
             db.session.query(Story).filter(Story.keep == False).delete()
             db.session.query(Issue).filter(Issue.keep == False).delete()
