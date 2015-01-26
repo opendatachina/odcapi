@@ -13,7 +13,7 @@ import urllib2
 import feedparser
 
 from BeautifulSoup import BeautifulSoup
-
+from socket import error as SocketError
 
 # list of attributes that can have a feed link in the <HEAD> section
 # so we can identify at least one in a page
@@ -68,7 +68,12 @@ def get_first_working_feed_link(url):
     """
 
     # if the url is a feed itself, returns it
-    html = urllib2.urlopen(url).read(1000000)
+    html = None
+    try:
+        html = urllib2.urlopen(url).read(1000000)
+    except SocketError as e:
+        return None
+
     feed = feedparser.parse(html)
 
     if not feed.get("bozo", 1):
