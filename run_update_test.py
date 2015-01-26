@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import os, unittest, tempfile, datetime, urllib2, logging
+import os
+import unittest
+import datetime
+import logging
+from re import match, sub
+
 from httmock import response, HTTMock
 from mock import Mock
-from time import time
-from re import match, sub
 
 root_logger = logging.getLogger()
 root_logger.disabled = True
@@ -60,7 +63,6 @@ class RunUpdateTestCase(unittest.TestCase):
         return '\n'.join(lines[0:count + 1])
 
     def response_content(self, url, request):
-        import run_update
 
         # csv file of project descriptions
         if url.geturl() == 'http://example.com/cfa-projects.csv':
@@ -290,8 +292,6 @@ class RunUpdateTestCase(unittest.TestCase):
             an error message should be logged.
         '''
         def overwrite_response_content(url, request):
-            import run_update
-
             if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
                 return response(404, '''Not Found!''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
 

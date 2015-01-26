@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-import unittest, requests, json, os
+import unittest
+import json
 from datetime import datetime, timedelta
 from urlparse import urlparse
+
 from sqlalchemy.exc import IntegrityError
+
 from app import app, db, Organization, Project, Event, Story, Issue, Label
 from factories import OrganizationFactory, ProjectFactory, EventFactory, StoryFactory, IssueFactory, LabelFactory
+
 
 class ApiTest(unittest.TestCase):
 
