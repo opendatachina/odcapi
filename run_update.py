@@ -83,7 +83,6 @@ def get_meetup_events(organization, group_urlname):
         Get events associated with a group
     '''
     meetup_url = "https://api.meetup.com/2/events?status=past,upcoming&format=json&group_urlname={0}&key={1}".format(group_urlname, meetup_key)
-    print "** meetup_url is %s" % meetup_url
     got = get(meetup_url)
     if got.status_code == 404:
         logging.error("%s's meetup page cannot be found" % organization.name)
