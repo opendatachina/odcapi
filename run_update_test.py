@@ -64,7 +64,7 @@ class RunUpdateTestCase(unittest.TestCase):
 
         # csv file of project descriptions
         if url.geturl() == 'http://example.com/cfa-projects.csv':
-            project_lines = ['''name,description,link_url,code_url,type,categories''', ''',"Thing for ""stuff"".",,https://github.com/codeforamerica/cityvoice,web service,"community engagement, housing"''', '''SouthBendVoices,,,https://github.com/codeforamerica/cityvoice,,''']
+            project_lines = ['''name,description,link_url,code_url,type,categories''', ''',,,https://github.com/codeforamerica/cityvoice,,''',''',,,https://github.com/codeforamerica/bizfriendly-web,,''']
             if self.results_state == 'before':
                 return response(200, '''\n'''.join(project_lines[0:3]))
             elif self.results_state == 'after':
@@ -78,16 +78,20 @@ class RunUpdateTestCase(unittest.TestCase):
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
             return response(200, '''{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
 
+        # json of project description
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web':
+            return response(200, ''' { "id": 11137392, "name": "bizfriendly-web", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792?v=3", "html_url": "https://github.com/codeforamerica", "type": "Organization" }, "html_url": "https://github.com/codeforamerica/bizfriendly-web", "description": "An online service that teaches small business owners how to use the internet to better run their businesses.", "url": "https://api.github.com/repos/codeforamerica/bizfriendly-web", "contributors_url": "https://api.github.com/repos/codeforamerica/bizfriendly-web/contributors", "created_at": "2013-07-02T23:14:10Z", "updated_at": "2014-11-02T18:55:33Z", "pushed_at": "2014-10-14T21:55:04Z", "homepage": "http://bizfriend.ly", "stargazers_count": 17, "watchers_count": 17, "language": "JavaScript", "forks_count": 21, "open_issues": 31 } ''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
+
         # json of project contributors
-        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/contributors':
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/contributors' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/contributors':
             return response(200, '''[ { "login": "daguar", "avatar_url": "https://avatars.githubusercontent.com/u/994938", "url": "https://api.github.com/users/daguar", "html_url": "https://github.com/daguar", "contributions": 518 } ]''')
 
         # json of project participation
-        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/stats/participation':
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/stats/participation' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/stats/participation':
             return response(200, '''{ "all": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 23, 9, 4, 0, 77, 26, 7, 17, 53, 59, 37, 40, 0, 47, 59, 55, 118, 11, 8, 3, 3, 30, 0, 1, 1, 4, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1 ], "owner": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] }''')
 
         # json of project issues
-        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
+        elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/issues':
             # build issues dynamically based on results_state value
             issue_lines = ['''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''', '''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/211","title": "More important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''']
             label_lines = ['''{ "color" : "84b6eb", "name" : "enhancement", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/enhancement"}''', '''{ "color" : "84b6eb", "name" : "question", "url": "https://api.github.com/repos/codeforamerica/cityvoice/labels/question"}''']
@@ -151,6 +155,12 @@ class RunUpdateTestCase(unittest.TestCase):
             stories_file.close()
             return response(200, stories_content)
 
+        elif url.geturl() == 'http://codeforphilly.org/projects.csv':
+                return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","http://google.com","",""''')
+
+        elif url.geturl() == 'http://openaustin.org/projects.csv':
+                return response(200, '''name,description,link_url,code_url,type,categories\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",,,web service,"project management, civic hacking"''')
+
         else:
             raise Exception('Asked for unknown URL ' + url.geturl())
 
@@ -175,10 +185,10 @@ class RunUpdateTestCase(unittest.TestCase):
         self.assertEqual(organization.name,u'Cöde for Ameriça')
 
         # check for the one project
-        filter = Project.name == u'SouthBendVoices'
+        filter = Project.name == u'bizfriendly-web'
         project = self.db.session.query(Project).filter(filter).first()
         self.assertIsNotNone(project)
-        self.assertEqual(project.name,u'SouthBendVoices')
+        self.assertEqual(project.name,u'bizfriendly-web')
 
         # check for the other project
         filter = Project.name == u'cityvoice'
@@ -242,9 +252,9 @@ class RunUpdateTestCase(unittest.TestCase):
         self.assertEqual(organization.name, u'Cöde for Ameriça')
 
         # check for the one project
-        filter = Project.name == u'SouthBendVoices'
+        filter = Project.name == u'bizfriendly-web'
         project = self.db.session.query(Project).filter(filter).first()
-        self.assertEqual(project.name,u'SouthBendVoices')
+        self.assertEqual(project.name,u'bizfriendly-web')
 
         # check for the one issue
         filter = Issue.title == u'Important cityvoice issue'
@@ -279,77 +289,56 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' When github returns a 404 when trying to retrieve project data,
             an error message should be logged.
         '''
-        def response_content(url, request):
+        def overwrite_response_content(url, request):
             import run_update
 
-            if url.geturl() == 'http://example.com/cfa-projects.csv':
-                return response(200, '''name,description,link_url,code_url,type,categories\n,,http://google.com,https://github.com/codeforamerica/cityvoice,,''')
-
-            elif "docs.google.com" in url:
-                return response(200, '''name,website,events_url,rss,projects_list_url\nCode for America,,,,http://example.com/cfa-projects.csv''')
-
-            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
+            if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
                 return response(404, '''Not Found!''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
 
             elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
                 return response(404, '''Not Found!''', {'ETag': '8456bc53d4cf6b78779ded3408886f82'})
 
-            else:
-                raise Exception('Asked for unknown URL ' + url.geturl())
-
         logging.error = Mock()
 
-        with HTTMock(response_content):
-            import run_update
-            run_update.main(org_sources="test_org_sources.csv")
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('https://api.github.com/repos/codeforamerica/cityvoice doesn\'t exist.')
 
     def test_main_with_github_errors(self):
         ''' When github returns a non-404 error code, an IOError should be raised.
         '''
-        def response_content(url, request):
-            import run_update
-
-            if url.geturl() == 'http://example.com/cfa-projects.csv':
-                return response(200, '''name,description,link_url,code_url,type,categories\n,,,https://github.com/codeforamerica/cityvoice,,''')
-
-            elif "docs.google.com" in url:
-                return response(200, '''name,website,events_url,rss,projects_list_url\nCode for America,,,,http://example.com/cfa-projects.csv''')
-
-            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
+        def overwrite_response_content(url, request):
+            if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
                 return response(422, '''Unprocessable Entity''')
 
-        with HTTMock(response_content):
-            import run_update
-            self.assertFalse(run_update.github_throttling)
-            with self.assertRaises(IOError):
-                run_update.main(org_sources="test_org_sources.csv")
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                self.assertFalse(run_update.github_throttling)
+                with self.assertRaises(IOError):
+                    run_update.main(org_sources="test_org_sources.csv")
 
     def test_main_with_weird_organization_name(self):
         ''' When an organization has a weird name, ...
         '''
-        def response_content(url, request):
-            import run_update
-
+        def overwrite_response_content(url, request):
             if "docs.google.com" in url:
                 return response(200, '''name\nCode_for-America''')
-            else:
-                raise Exception('Asked for unknown URL ' + url.geturl())
-
-        logging.error = Mock()
 
         self.setup_mock_rss_response()
 
-        with HTTMock(response_content):
-            import run_update
-            run_update.main(org_sources="test_org_sources.csv")
-            from app import Error
-            errors = self.db.session.query(Error).all()
-            for error in errors:
-                self.assertTrue("ValueError" in error.error)
-            self.assertEqual(self.db.session.query(Error).count(),1)
-
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                run_update.main(org_sources="test_org_sources.csv")
+                from app import Error
+                errors = self.db.session.query(Error).all()
+                for error in errors:
+                    self.assertTrue("ValueError" in error.error)
+                self.assertEqual(self.db.session.query(Error).count(),1)
 
         from app import Organization
 
@@ -361,17 +350,18 @@ class RunUpdateTestCase(unittest.TestCase):
       ''' When an org has a invalid name, test that it gets skipped and an error is added to the db
       '''
 
-      def response_content(url, request):
+      def overwrite_response_content(url, request):
           return response(200, '''name\nCode#America\nCode?America\nCode/America\nCode for America''')
 
-      with HTTMock(response_content):
-          import run_update
-          run_update.main(org_sources="test_org_sources.csv")
-          from app import Error
-          errors = self.db.session.query(Error).all()
-          for error in errors:
-              self.assertTrue("ValueError" in error.error)
-          self.assertEqual(self.db.session.query(Error).count(),3)
+      with HTTMock(self.response_content):
+          with HTTMock(overwrite_response_content):
+              import run_update
+              run_update.main(org_sources="test_org_sources.csv")
+              from app import Error
+              errors = self.db.session.query(Error).all()
+              for error in errors:
+                  self.assertTrue("ValueError" in error.error)
+              self.assertEqual(self.db.session.query(Error).count(),3)
 
       # Make sure one good organization exists
       from app import Organization
@@ -381,20 +371,16 @@ class RunUpdateTestCase(unittest.TestCase):
     def test_main_with_bad_events_url(self):
         ''' When an organization has a badly formed events url is passed, no events are saved
         '''
-        def response_content(url, request):
-            import run_update
-
+        def overwrite_response_content(url, request):
             if "docs.google.com" in url:
                 return response(200, '''name,events_url\nCode for America,http://www.meetup.com/events/foo-%%%''')
 
-            else:
-                raise Exception('Asked for unknown URL ' + url.geturl())
-
         logging.error = Mock()
 
-        with HTTMock(response_content):
-            import run_update
-            run_update.main(org_sources="test_org_sources.csv")
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('Code for America does not have a valid events url')
 
@@ -408,24 +394,20 @@ class RunUpdateTestCase(unittest.TestCase):
         ''' When meetup returns a 404 for an organization's events url, an error
             message should be logged
         '''
-        def response_content(url, request):
-            import run_update
-
+        def overwrite_response_content(url, request):
             if "docs.google.com" in url:
                 return response(200, '''name,events_url\nCode for America,http://www.meetup.com/events/Code-For-Charlotte''')
 
             if 'api.meetup.com' in url:
                 return response(404, '''Not Found!''')
 
-            else:
-                raise Exception('Asked for unknown URL ' + url.geturl())
-
         logging.error = Mock()
         self.setup_mock_rss_response()
 
-        with HTTMock(response_content):
-            import run_update
-            run_update.main(org_sources="test_org_sources.csv")
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                run_update.main(org_sources="test_org_sources.csv")
 
         logging.error.assert_called_with('Code for America\'s meetup page cannot be found')
 
@@ -439,9 +421,9 @@ class RunUpdateTestCase(unittest.TestCase):
         organization = OrganizationFactory(name=u'Code for America')
 
         with HTTMock(self.response_content):
-            import run_update as ru
-            for story_info in ru.get_stories(organization):
-                ru.save_story_info(self.db.session, story_info)
+            import run_update
+            for story_info in run_update.get_stories(organization):
+                run_update.save_story_info(self.db.session, story_info)
 
         self.db.session.flush()
 
@@ -458,29 +440,19 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         Test that when GitHub throttles us, we skip updating projects and record an error.
         '''
-
-        def response_content(url, request):
-            if url.netloc == 'docs.google.com':
-                return response(200, '''name,projects_list_url\nCode for San Francisco,http://github.com/codeforsanfrancisco''')
-            if url.netloc == 'api.github.com' and url.path == '/users/codeforsanfrancisco/repos':
-                return response(200, '''[{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }]''', headers=dict(Link='<https://api.github.com/user/337792/repos?page=2>; rel="next", <https://api.github.com/user/337792/repos?page=2>; rel="last"'))
-            if url.netloc == 'api.github.com' and url.path == '/user/337792/repos':
-                return response(200, '''[{"id": 12120917, "name": "beyondtransparency", "description": "Code for America's new book - Beyond Transparency :closed_book:", "homepage": "http://beyondtransparency.org", "html_url": "https://github.com/codeforamerica/beyondtransparency"}]''')
+        def overwrite_response_content(url, request):
             if url.netloc == 'api.github.com':
                 return response(403, "", {"x-ratelimit-remaining" : 0})
 
-        with HTTMock(response_content):
-            import run_update
-            run_update.main(org_sources="test_org_sources.csv")
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                run_update.main(org_sources="test_org_sources.csv")
 
         from app import Project
         projects = self.db.session.query(Project).all()
         for project in projects:
             self.assertIsNone(project.github_details)
-
-        from app import Organization
-        org_count = self.db.session.query(Organization).count()
-        self.assertEqual(org_count, 1)
 
         from app import Error
         error = self.db.session.query(Error).first()
@@ -491,47 +463,33 @@ class RunUpdateTestCase(unittest.TestCase):
         Testing weird csv dialects we've encountered
         '''
         from factories import OrganizationFactory
-        philly = OrganizationFactory(name='Code for Philly')
-        gdocs = OrganizationFactory(projects_list_url="http://www.gdocs.com/projects.csv")
+        philly = OrganizationFactory(name=u'Code for Philly', projects_list_url=u'http://codeforphilly.org/projects.csv')
+        austin = OrganizationFactory(name=u'Open Austin', projects_list_url=u'http://openaustin.org/projects.csv')
 
-        def response_content(url, request):
-            if url.netloc == 'www.civicorganization1.com':
-                return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","","",""''')
-            if url.netloc == 'www.gdocs.com':
-                return response(200, '''name,description,link_url,code_url,type,categories\r\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",http://open-austin.github.io/hack-task-aggregator/public/index.html,,web service,"project management, civic hacking"''')
-
-        with HTTMock(response_content):
+        with HTTMock(self.response_content):
             import run_update
             projects = run_update.get_projects(philly)
             self.assertEqual(projects[0]['name'], "OpenPhillyGlobe")
             self.assertEqual(projects[0]['description'], 'Google Earth for Philadelphia" with open source and open transit data."')
 
-            projects = run_update.get_projects(gdocs)
+            projects = run_update.get_projects(austin)
             self.assertEqual(projects[0]['name'], "Hack Task Aggregator")
             self.assertEqual(projects[0]['description'], 'Web application to aggregate tasks across projects that are identified for "hacking".')
 
-    # :TODO: fails if you run it solo
     def test_non_github_projects(self):
         ''' Test that non github and non code projects get last_updated timestamps.
         '''
         from factories import OrganizationFactory
-        whatever = OrganizationFactory(name='Whatever')
-        gdocs = OrganizationFactory(projects_list_url="http://www.gdocs.com/projects.csv")
+        philly = OrganizationFactory(name=u'Code for Philly', projects_list_url=u'http://codeforphilly.org/projects.csv')
+        austin = OrganizationFactory(name=u'Open Austin', projects_list_url=u'http://openaustin.org/projects.csv')
 
-        def response_content(url, request):
-            if url.netloc == 'www.civicorganization6.com':
-                return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","http://google.com","",""''')
-            if url.netloc == 'www.gdocs.com':
-                return response(200, '''name,description,link_url,code_url,type,categories\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",,,web service,"project management, civic hacking"''')
-
-
-        with HTTMock(response_content):
+        with HTTMock(self.response_content):
             import run_update
-            projects = run_update.get_projects(whatever)
+            projects = run_update.get_projects(philly)
             self.assertEqual(projects[0]['name'], "OpenPhillyGlobe")
             self.assertEqual(projects[0]['last_updated'], datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z"))
 
-            projects = run_update.get_projects(gdocs)
+            projects = run_update.get_projects(austin)
             self.assertEqual(projects[0]['name'], "Hack Task Aggregator")
             self.assertEqual(projects[0]['last_updated'], datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S %Z"))
 
@@ -546,20 +504,20 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         from factories import OrganizationFactory, ProjectFactory
 
-
         philly = OrganizationFactory(name=u'Code for Philly', projects_list_url=u'http://codeforphilly.org/projects.csv')
         old_project = ProjectFactory(name=u'Philly Map of Shame', organization_name=u'Code for Philly', description=u'PHL Map of Shame is a citizen-led project to map the impact of the School Reform Commission\u2019s \u201cdoomsday budget\u201d on students and parents. We will visualize complaints filed with the Pennsylvania Department of Education.', categories=u'Education, CivicEngagement', type=u'', link_url=u'http://phillymapofshame.org')
         self.db.session.flush()
 
-        def response_content(url, request):
+        def overwrite_response_content(url, request):
             if url.geturl() == 'http://codeforphilly.org/projects.csv':
                 return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"Philly Map of Shame","PHL Map of Shame is a citizen-led project to map the impact of the School Reform Commission\xe2\x80\x99s \xe2\x80\x9cdoomsday budget\xe2\x80\x9d on students and parents. We will visualize complaints filed with the Pennsylvania Department of Education.","http://phillymapofshame.org","","","Education, CivicEngagement"''')
-            
-        with HTTMock(response_content):
-            import run_update
-            projects = run_update.get_projects(philly)
 
-            assert projects[0]['last_updated'] == None
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                projects = run_update.get_projects(philly)
+                # If the two descriptions are equal, it won't update last_updated
+                assert projects[0]['last_updated'] == None
 
     def test_issue_paging(self):
         ''' test that issues are following page links '''
@@ -568,7 +526,7 @@ class RunUpdateTestCase(unittest.TestCase):
         organization = OrganizationFactory(name=u'Code for America', projects_list_url=u'http://codeforamerica.org/projects.csv')
         project = ProjectFactory(organization_name=u'Code for America',code_url=u'https://github.com/TESTORG/TESTPROJECT')
 
-        def response_content(url, request):
+        def overwrite_response_content(url, request):
             if url.geturl() == 'https://api.github.com/repos/TESTORG/TESTPROJECT/issues':
                 content = '''[{"number": 2,"title": "TEST TITLE 2","body": "TEST BODY 2","labels": [], "html_url":""}]'''
                 headers = {"Link": '<https://api.github.com/repos/TESTORG/TESTPROJECT/issues?page=2>"; rel="next"','ETag':'TEST ETAG'}
@@ -578,35 +536,29 @@ class RunUpdateTestCase(unittest.TestCase):
                 content = '''[{"number": 2,"title": "TEST TITLE 2","body": "TEST BODY 2","labels": [], "html_url":""}]'''
                 return response(200, content)
 
-
-        with HTTMock(response_content):
-            import run_update
-            issues = run_update.get_issues(organization.name)
-            assert (len(issues) == 2)
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                issues = run_update.get_issues(organization.name)
+                assert (len(issues) == 2)
 
     def test_project_list_without_all_columns(self):
         ''' Get a project list that doesn't have all the columns.
             Don't die.
         '''
-        from app import Project
-        from factories import OrganizationFactory, ProjectFactory
+        # from app import Project
+        from factories import OrganizationFactory
+        organization = OrganizationFactory(projects_list_url=u'http://organization.org/projects.csv')
 
-        organization = OrganizationFactory(name=u'TEST ORG', projects_list_url=u'http://www.gdocs.com/projects.csv')
-        project = ProjectFactory(organization_name=u'TEST ORG', name=u'TEST PROJECT2', description=u'TEST DESCRIPTION 2', link_url=u'http://testurl.org')
-        self.db.session.flush()
+        def overwrite_response_content(url, request):
+            if url.geturl() == 'http://organization.org/projects.csv':
+                return response(200, '''name,description,link_url\n,,http://fakeprojectone.com\n,,,http://whatever.com/testproject''')
 
-        def response_content(url, request):
-            if url.netloc == 'www.gdocs.com':
-                return response(200, '''name,description,link_url,code_url\nTEST PROJECT,TEST DESCRIPTION,http://google.com,https://github.com/testorg/testproject\nTEST PROJECT2,TEST DESCRIPTION2,http://google.com,http://whatever.com/testproject''')
-            elif url.netloc == 'api.github.com':
-                return response(200, '''{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
-            elif url.netloc == 'whatever.com':
-                return response(200, '''"name","description","link_url","code_url"\n"TEST PROJECT2","TEST DESCRIPTION 2","http://testurl.org",""''')
-
-        with HTTMock(response_content):
-            import run_update
-            projects = run_update.get_projects(organization)
-            assert len(projects) == 2
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                projects = run_update.get_projects(organization)
+                assert len(projects) == 2
 
     def test_missing_last_updated(self):
         ''' In rare cases, a project will be in the db without a last_updated date
