@@ -4,10 +4,17 @@
 
 from __future__ import division
 
-from flask import Flask, make_response, request, current_app, jsonify, render_template
-from datetime import datetime, timedelta, date
-from functools import update_wrapper
-import json, os, requests, time
+from datetime import datetime, date
+import json
+import os
+import time
+from mimetypes import guess_type
+from os.path import join
+from math import ceil
+from urllib import urlencode
+
+from flask import Flask, make_response, request, jsonify, render_template
+import requests
 from flask.ext.heroku import Heroku
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.mutable import Mutable
@@ -16,13 +23,9 @@ from sqlalchemy.sql.expression import func
 from sqlalchemy.orm import backref
 from dictalchemy import make_class_dictable
 from dateutil.tz import tzoffset
-from mimetypes import guess_type
-from copy import deepcopy
-from os.path import join
-from math import ceil
-from urllib import urlencode
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
+
 
 # -------------------
 # Init

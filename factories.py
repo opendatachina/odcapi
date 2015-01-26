@@ -1,11 +1,13 @@
 # -*- coding: utf8 -*-
 
-import factory
-from app import Organization, Project, Event, Story, db, Issue, Label
-from factory.alchemy import SQLAlchemyModelFactory
-from sqlalchemy.orm import scoped_session, sessionmaker
 from random import choice
 from datetime import datetime, timedelta
+
+import factory
+from factory.alchemy import SQLAlchemyModelFactory
+
+from app import Organization, Project, Event, Story, db, Issue, Label
+
 
 class OrganizationFactory(SQLAlchemyModelFactory):
     FACTORY_FOR = Organization

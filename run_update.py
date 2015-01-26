@@ -1,23 +1,25 @@
-import os, sys, csv, yaml
+import os
 import logging
-from urlparse import urlparse
-from csv import DictReader, Sniffer
+from csv import DictReader
 from itertools import groupby
 from operator import itemgetter
 from StringIO import StringIO
-from requests import get, exceptions
 from datetime import datetime
-from dateutil.tz import tzoffset
-from unidecode import unidecode
-from feeds import extract_feed_links, get_first_working_feed_link
-import feedparser
-from app import db, app, Project, Organization, Story, Event, Error, Issue, Label, is_safe_name
 from urllib2 import HTTPError, URLError
 from urlparse import urlparse
 from random import shuffle
 from argparse import ArgumentParser
 from time import time
 from re import match
+
+import yaml
+from requests import get, exceptions
+from dateutil.tz import tzoffset
+import feedparser
+
+from feeds import get_first_working_feed_link
+from app import db, Project, Organization, Story, Event, Error, Issue, Label, is_safe_name
+
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO)
@@ -81,6 +83,7 @@ def get_meetup_events(organization, group_urlname):
         Get events associated with a group
     '''
     meetup_url = "https://api.meetup.com/2/events?status=past,upcoming&format=json&group_urlname={0}&key={1}".format(group_urlname, meetup_key)
+    print "** meetup_url is %s" % meetup_url
     got = get(meetup_url)
     if got.status_code == 404:
         logging.error("%s's meetup page cannot be found" % organization.name)
