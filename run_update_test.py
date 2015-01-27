@@ -72,27 +72,31 @@ class RunUpdateTestCase(unittest.TestCase):
             elif self.results_state == 'after':
                 return response(200, '''\n'''.join(project_lines[0:2]))
 
+        # json of project descriptions
+        elif url.geturl() == 'https://api.github.com/users/codeforamerica/repos':
+            return response(200, '''[{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }]''', headers=dict(Link='<https://api.github.com/user/337792/repos?page=2>; rel="next", <https://api.github.com/user/337792/repos?page=2>; rel="last"'))
+
         # csv file of organization descriptions
         elif "docs.google.com" in url:
             return response(200, self.get_raw_organization_list(self.organization_count))
 
-        # json of project description
+        # json of project description (cityvoice)
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
             return response(200, '''{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
 
-        # json of project description
+        # json of project description (bizfriendly-web)
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web':
             return response(200, ''' { "id": 11137392, "name": "bizfriendly-web", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792?v=3", "html_url": "https://github.com/codeforamerica", "type": "Organization" }, "html_url": "https://github.com/codeforamerica/bizfriendly-web", "description": "An online service that teaches small business owners how to use the internet to better run their businesses.", "url": "https://api.github.com/repos/codeforamerica/bizfriendly-web", "contributors_url": "https://api.github.com/repos/codeforamerica/bizfriendly-web/contributors", "created_at": "2013-07-02T23:14:10Z", "updated_at": "2014-11-02T18:55:33Z", "pushed_at": "2014-10-14T21:55:04Z", "homepage": "http://bizfriend.ly", "stargazers_count": 17, "watchers_count": 17, "language": "JavaScript", "forks_count": 21, "open_issues": 31 } ''', {'last-modified': datetime.datetime.strptime('Fri, 15 Nov 2013 00:08:07 GMT',"%a, %d %b %Y %H:%M:%S GMT")})
 
-        # json of project contributors
+        # json of project contributors (cityvoice)
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/contributors' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/contributors':
             return response(200, '''[ { "login": "daguar", "avatar_url": "https://avatars.githubusercontent.com/u/994938", "url": "https://api.github.com/users/daguar", "html_url": "https://github.com/daguar", "contributions": 518 } ]''')
 
-        # json of project participation
+        # json of project participation (cityvoice)
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/stats/participation' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/stats/participation':
             return response(200, '''{ "all": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 23, 9, 4, 0, 77, 26, 7, 17, 53, 59, 37, 40, 0, 47, 59, 55, 118, 11, 8, 3, 3, 30, 0, 1, 1, 4, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1 ], "owner": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] }''')
 
-        # json of project issues
+        # json of project issues (cityvoice, bizfriendly-web)
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/issues':
             # build issues dynamically based on results_state value
             issue_lines = ['''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''', '''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/211","title": "More important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''']
@@ -112,10 +116,6 @@ class RunUpdateTestCase(unittest.TestCase):
         # json of contributor profile
         elif url.geturl() == 'https://api.github.com/users/daguar':
             return response(200, '''{ "login": "daguar", "avatar_url": "https://gravatar.com/avatar/whatever", "html_url": "https://github.com/daguar", "name": "Dave Guarino", "company": "", "blog": null, "location": "Oakland, CA", "email": "dave@codeforamerica.org",  }''')
-
-        # json of project descriptions
-        elif url.geturl() == 'https://api.github.com/users/codeforamerica/repos':
-            return response(200, '''[{ "id": 10515516, "name": "cityvoice", "owner": { "login": "codeforamerica", "avatar_url": "https://avatars.githubusercontent.com/u/337792", "html_url": "https://github.com/codeforamerica", "type": "Organization"}, "html_url": "https://github.com/codeforamerica/cityvoice", "description": "A place-based call-in system for gathering and sharing community feedback",  "url": "https://api.github.com/repos/codeforamerica/cityvoice", "contributors_url": "https://api.github.com/repos/codeforamerica/cityvoice/contributors", "created_at": "2013-06-06T00:12:30Z", "updated_at": "2014-02-21T20:43:16Z", "pushed_at": "2014-02-21T20:43:16Z", "homepage": "http://www.cityvoiceapp.com/", "stargazers_count": 10, "watchers_count": 10, "language": "Ruby", "forks_count": 12, "open_issues": 37 }]''', headers=dict(Link='<https://api.github.com/user/337792/repos?page=2>; rel="next", <https://api.github.com/user/337792/repos?page=2>; rel="last"'))
 
         # json of page two of project descriptions (empty)
         elif url.geturl() == 'https://api.github.com/user/337792/repos?page=2':
@@ -150,16 +150,18 @@ class RunUpdateTestCase(unittest.TestCase):
             stories_file.close()
             return response(200, stories_content)
 
-        # xml of alternate blog feed
+        # xml of alternate blog feed (stories)
         elif url.geturl() == 'http://www.codeforamerica.org/blog/another/feed/':
             stories_file=open('blog_another.xml')
             stories_content = stories_file.read()
             stories_file.close()
             return response(200, stories_content)
 
+        # csv of projects (philly)
         elif url.geturl() == 'http://codeforphilly.org/projects.csv':
                 return response(200, '''"name","description","link_url","code_url","type","categories"\r\n"OpenPhillyGlobe","\"Google Earth for Philadelphia\" with open source and open transit data.","http://cesium.agi.com/OpenPhillyGlobe/","http://google.com","",""''')
 
+        # csv of projects (austin)
         elif url.geturl() == 'http://openaustin.org/projects.csv':
                 return response(200, '''name,description,link_url,code_url,type,categories\nHack Task Aggregator,"Web application to aggregate tasks across projects that are identified for ""hacking"".",,,web service,"project management, civic hacking"''')
 
@@ -652,7 +654,6 @@ class RunUpdateTestCase(unittest.TestCase):
             self.assertEqual(organization.name, org_check['name'])
             self.assertTrue(organization.keep)
 
-
         # reset with just two organizations
         self.organization_count = 2
         partial_orgs_list = []
@@ -829,6 +830,51 @@ class RunUpdateTestCase(unittest.TestCase):
         self.organization_count = 3
         self.results_state = 'before'
 
+    def test_same_projects_different_organizations(self):
+        ''' Verify that the same project can be associated with two different organizations
+        '''
+        from app import Organization, Project, Event, Story, Issue, Label
+        import run_update
+
+        test_sources = "test_org_sources.csv"
+
+        self.setup_mock_rss_response()
+
+        # save the default response for the cityvoice project
+        body_text = None
+        headers_dict = None
+        with HTTMock(self.response_content):
+            from requests import get
+            got = get('https://api.github.com/repos/codeforamerica/cityvoice')
+            body_text = got.text
+            headers_dict = got.headers
+
+        # overwrite to return a 304 instead of a 200 for the cityvoice project
+        def overwrite_response_content(url, request):
+            if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
+                return response(304, body_text, headers_dict)
+
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                # run the update on the same orgs
+                run_update.main(org_sources=test_sources)
+
+        # verify that there are multiple 'cityvoice' projects that are identical except in organization name
+        projects = self.db.session.query(Project).filter(Project.name == u'cityvoice').all()
+        project_names = [item.name for item in projects]
+        project_code_urls = [item.code_url for item in projects]
+        project_organization_names = [item.organization_name for item in projects]
+
+        import pdb; pdb.set_trace()
+
+        # there should be more than one project returned
+        self.assertTrue(len(projects) > 1)
+        # there should be only one project name
+        self.assertTrue(len(set(project_names)) == 1)
+        # there should be only one code url
+        self.assertTrue(len(set(project_code_urls)) == 1)
+        # all the organization names should be unique
+        self.assertTrue(len(set(project_organization_names)) == len(project_organization_names))
 
 if __name__ == '__main__':
     unittest.main()
