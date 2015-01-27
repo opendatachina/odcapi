@@ -846,10 +846,10 @@ class RunUpdateTestCase(unittest.TestCase):
         with HTTMock(self.response_content):
             from requests import get
             got = get('https://api.github.com/repos/codeforamerica/cityvoice')
-            body_text = got.text
+            body_text = str(got.text)
             headers_dict = got.headers
 
-        # overwrite to return a 304 instead of a 200 for the cityvoice project
+        # overwrite to return a 304 (not modified) instead of a 200 for the cityvoice project
         def overwrite_response_content(url, request):
             if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
                 return response(304, body_text, headers_dict)
@@ -864,8 +864,6 @@ class RunUpdateTestCase(unittest.TestCase):
         project_names = [item.name for item in projects]
         project_code_urls = [item.code_url for item in projects]
         project_organization_names = [item.organization_name for item in projects]
-
-        import pdb; pdb.set_trace()
 
         # there should be more than one project returned
         self.assertTrue(len(projects) > 1)
