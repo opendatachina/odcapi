@@ -271,9 +271,9 @@ def get_projects(organization):
             return []
 
     # If projects is just a list of GitHub urls, like Open Gov Hack Night
-    # turn it into a dict with
+    # turn it into a list of dicts with minimal project information
     if len(projects) and type(projects[0]) in (str, unicode):
-        projects = [dict(code_url=item) for item in projects]
+        projects = [dict(code_url=item, organization_name=organization.name) for item in projects]
 
     # If data is list of dicts, like BetaNYC or a GitHub org
     elif len(projects) and type(projects[0]) is dict:
@@ -364,8 +364,12 @@ def update_project_info(project):
         if github_throttling:
             return project
 
-        # :TODO: filter on something other than just code_url (org name & project name)
-        existing_project = db.session.query(Project).filter(Project.code_url == project['code_url']).first()
+        # find an existing project, filtering on code_url, organization_name, and project name (if we know it)
+        existing_filter = [Project.code_url == project['code_url'], Project.organization_name == project['organization_name']]
+        if 'name' in project.keys() and project['name'] not in [u'', None]:
+            existing_filter.append(Project.name == project['name'])
+
+        existing_project = db.session.query(Project).filter(*existing_filter).first()
         if existing_project:
             if existing_project.last_updated:
                 last_updated = datetime.strftime(existing_project.last_updated, "%a, %d %b %Y %H:%M:%S GMT")
