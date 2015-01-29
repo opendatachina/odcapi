@@ -117,9 +117,6 @@ def get_organizations(org_sources):
         for org_source in file.read().splitlines():
             if 'docs.google.com' in org_source:
                 organizations.extend(get_organizations_from_spreadsheet(org_source))
-            if '.yml' in org_source:
-                # Only case is GitHub government list
-                organizations.extend(get_organizations_from_government_github_com(org_source))
 
     return organizations
 
@@ -139,22 +136,6 @@ def get_organizations_from_spreadsheet(org_source):
     for (index, org) in enumerate(organizations):
         organizations[index] = dict([(k.decode('utf8'), v.decode('utf8'))
                                      for (k, v) in org.items()])
-
-    return organizations
-
-def get_organizations_from_government_github_com(org_source):
-    ''' Get a row for each organization from government.github.com.
-
-    That GitHub site is a useful resource and index of government organisations
-    across the world that have organization profiles on GitHub.
-    '''
-    got = get(org_source)
-    org_list = yaml.load(got.content)
-    organizations = []
-    for group in org_list:
-        for org in org_list[group]:
-            org = {'name': org, 'projects_list_url': 'https://github.com/' + org, 'type': 'government', 'city': group}
-            organizations.append(org)
 
     return organizations
 
