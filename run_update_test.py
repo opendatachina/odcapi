@@ -875,5 +875,45 @@ class RunUpdateTestCase(unittest.TestCase):
         # all the organization names should be unique
         self.assertTrue(len(set(project_organization_names)) == len(project_organization_names))
 
+    def test_repo_name_used_for_missing_project_name(self):
+        ''' Verify that a repo name will be used when no project name is available
+        '''
+        from app import Organization, Project, Event, Story, Issue, Label
+        import run_update
+
+        test_sources = 'test_org_sources.csv'
+
+        self.setup_mock_rss_response()
+
+        # only get one organization
+        self.organization_count = 1
+
+        with HTTMock(self.response_content):
+            # run the update
+            run_update.main(org_sources=test_sources)
+
+            # verify only one organization was returned
+            organizations = self.db.session.query(Organization).all()
+            self.assertTrue(len(organizations) is 1)
+
+            # get the raw project data and verify that no names are set there
+            from requests import get
+            from csv import DictReader
+            raw_project_list = get(organizations[0].projects_list_url)
+            project_list = list(DictReader(raw_project_list.text.splitlines(), dialect='excel'))
+            for project in project_list:
+                self.assertTrue(project['name'] in [u'', None])
+
+        # now get the projects from the database
+        projects = self.db.session.query(Project).all()
+        for project in projects:
+            # verify that the project name isn't empty
+            self.assertTrue(project.name not in [u'', None])
+            # verify that the project name is the same as the repo name
+            self.assertTrue(project.name == project.github_details['name'])
+
+        # reset to defaults
+        self.organization_count = 3
+
 if __name__ == '__main__':
     unittest.main()
