@@ -299,7 +299,6 @@ def get_projects(organization):
 
     return projects
 
-
 def update_project_info(project):
     ''' Update info from Github, if it's missing.
 
@@ -394,6 +393,7 @@ def update_project_info(project):
                 }
                 new_error = Error(**error_dict)
                 db.session.add(new_error)
+                print "-> (01) commit (update_project_info) (for error)"
                 db.session.commit()
                 github_throttling = True
                 return project
@@ -409,6 +409,7 @@ def update_project_info(project):
                 # :::here (project/true)
                 existing_project.keep = True
                 db.session.add(existing_project)
+                print "-> (02) commit (update_project_info) (for project)"
                 db.session.commit()
                 return None
 
@@ -510,7 +511,8 @@ def get_issues(org_name):
     issues = []
 
     # Flush the current db session to save projects added in current run
-    db.session.flush()
+    #print "-> (03) flush (get_issues) (before issues)"
+    #db.session.flush()
 
     # Only grab this organization's projects
     projects = db.session.query(Project).filter(Project.organization_name == org_name).all()
@@ -545,7 +547,8 @@ def get_issues(org_name):
             # Update project's last_updated_issue field
             project.last_updated_issues = unicode(got.headers['ETag'])
             db.session.add(project)
-            db.session.commit()
+            # print "-> (04) commit (get_issues) (for adding a project)"
+            # db.session.commit()
 
             responses = get_adjoined_json_lists(got, headers={'If-None-Match': project.last_updated_issues})
 
@@ -624,7 +627,8 @@ def save_organization_info(session, org_dict):
     if not existing_org:
         new_organization = Organization(**org_dict)
         session.add(new_organization)
-        session.commit()
+        # print "-> (05) commit (save_organization_info) (for adding an organization)"
+        # session.commit()
         return new_organization
 
     # Timestamp the existing organization
@@ -636,8 +640,9 @@ def save_organization_info(session, org_dict):
     for (field, value) in org_dict.items():
         setattr(existing_org, field, value)
 
-    # Commit existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
-    session.commit()
+    # Flush existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
+    # print "-> (06) flush (save_organization_info) (for an organization)"
+    # session.flush()
 
     return existing_org
 
@@ -664,8 +669,9 @@ def save_project_info(session, proj_dict):
     for (field, value) in proj_dict.items():
         setattr(existing_project, field, value)
 
-    # Commit existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
-    session.commit()
+    # Flush existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
+    # print "-> (07) flush (save_project_info) (for a project)"
+    # session.flush()
 
     return existing_project
 
@@ -682,7 +688,8 @@ def save_issue(session, issue):
     if not existing_issue:
         new_issue = Issue(**issue)
         session.add(new_issue)
-        session.commit()
+        # print "-> (08) commit (save_issue) (for a new issue)"
+        # session.commit()
     
     else:
         # Preserve the existing issue. 
@@ -693,7 +700,8 @@ def save_issue(session, issue):
         existing_issue.body = issue['body']
         existing_issue.html_url = issue['html_url']
         existing_issue.project_id = issue['project_id']
-        session.commit()
+        # print "-> (09) commit (save_issue) (for an existing issue)"
+        # session.commit()
 
 def save_labels(session, issue):
     '''
@@ -715,13 +723,15 @@ def save_labels(session, issue):
             label_dict["issue_id"] = existing_issue.id
             new_label = Label(**label_dict)
             session.add(new_label)
-            session.commit()
+            # print "-> (10) commit (save_labels) (for adding a new label)"
+            # session.commit()
 
     # Delete labels that are not in the incoming list but are in the existing list
     delete_label_names = list(set(existing_label_names) - set(incoming_label_names))
     for label_name in delete_label_names:
         session.query(Label).filter(Label.issue_id == existing_issue.id, Label.name == label_name).delete()
-        session.commit()
+        # print "-> (11) commit (save_labels) (for deleting an orphaned label)"
+        # session.commit()
 
 def save_event_info(session, event_dict):
     '''
@@ -748,7 +758,8 @@ def save_event_info(session, event_dict):
         setattr(existing_event, field, value)
 
     # Flush existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
-    session.flush()
+    # print "-> (12) flush (save_event_info) (for an event)"
+    # session.flush()
 
 def save_story_info(session, story_dict):
     '''
@@ -776,7 +787,8 @@ def save_story_info(session, story_dict):
         setattr(existing_story, field, value)
 
     # Flush existing object, to prevent a sqlalchemy.orm.exc.StaleDataError.
-    session.flush()
+    # print "-> (13) flush (save_story_info) (for a story)"
+    # session.flush()
 
 def get_event_group_identifier(events_url):
     parse_result = urlparse(events_url)
@@ -812,6 +824,7 @@ def main(org_name=None, org_sources=None):
             }
             new_error = Error(**error_dict)
             db.session.add(new_error)
+            print "-> (14) commit (main) (for an error)"
             db.session.commit()
             continue
 
@@ -826,6 +839,7 @@ def main(org_name=None, org_sources=None):
             db.session.execute(db.update(Story, values={'keep': False}).where(Story.organization_name == org_info['name']))
             db.session.execute(db.update(Project, values={'keep': False}).where(Project.organization_name == org_info['name']))
             db.session.execute(db.update(Organization, values={'keep': False}).where(Organization.name == org_info['name']))
+            print "-> (15) commit (main) (for setting keeps false)"
             db.session.commit()
 
             # Empty lat longs are okay.
@@ -838,6 +852,8 @@ def main(org_name=None, org_sources=None):
 
             organization = save_organization_info(db.session, org_info)
             organization_names.add(organization.name)
+            print "-> (15.1) flush (main) for an organization"
+            db.session.flush()
 
             if organization.rss or organization.website:
                 logging.info("Gathering all of %s's stories." % organization.name)
@@ -845,12 +861,16 @@ def main(org_name=None, org_sources=None):
                 if stories:
                     for story_info in stories:
                         save_story_info(db.session, story_info)
+                    print "-> (15.5) flush (main) (for stories)"
+                    db.session.flush()
 
             if organization.projects_list_url:
                 logging.info("Gathering all of %s's projects." % organization.name)
                 projects = get_projects(organization)
                 for proj_info in projects:
                     save_project_info(db.session, proj_info)
+                print "-> (16) flush (main) (for projects)"
+                db.session.flush()
 
             if organization.events_url:
                 if not meetup_key:
@@ -863,15 +883,25 @@ def main(org_name=None, org_sources=None):
                     if identifier:
                         for event in get_meetup_events(organization, identifier):
                             save_event_info(db.session, event)
+                        print "-> (16.5) flush (main) (for events)"
+                        db.session.flush()
                     else:
                         logging.error("%s does not have a valid events url" % organization.name)
 
             # Get issues for all of the projects
             logging.info("Gathering all of %s's open GitHub issues." % organization.name)
             issues = get_issues(organization.name)
+            #import pdb; pdb.set_trace()
             for issue in issues:
                 save_issue(db.session, issue)
+
+            print "-> (16.6) flush (main) (after issues, flushes everything)"
+            db.session.flush()
+            for issue in issues:
                 save_labels(db.session, issue)
+
+            print "-> (16.7) commit (main) (after issues and labels, commits everything)"
+            db.session.commit()
 
             # Remove everything marked for deletion.
             # :::here (event/delete, story/delete, project/delete, issue/delete, organization/delete)
@@ -880,6 +910,7 @@ def main(org_name=None, org_sources=None):
             db.session.query(Issue).filter(Issue.keep == False).delete()
             db.session.query(Project).filter(Project.keep == False).delete()
             db.session.query(Organization).filter(Organization.keep == False).delete()
+            print "-> (17) commit (main) (for deleting objects without keep=True)"
             db.session.commit()
 
         except:
@@ -888,6 +919,7 @@ def main(org_name=None, org_sources=None):
 
         else:
             # Commit and move on to the next organization.
+            print "-> (18) commit (main) (final commit before moving on to next organization)"
             db.session.commit()
 
     # prune orphaned organizations if no organization name was passed
@@ -898,6 +930,7 @@ def main(org_name=None, org_sources=None):
 
             # delete orphaned organizations, all other deletions will cascade
             db.session.execute(db.delete(Organization).where(Organization.name == bad_org.name))
+            print "-> (19) commit (main) (for deleting orphaned organizations)"
             db.session.commit()
 
 parser = ArgumentParser(description='''Update database from CSV source URL.''')
