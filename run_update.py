@@ -355,7 +355,7 @@ def update_project_info(project):
                 last_updated = datetime.strftime(existing_project.last_updated, "%a, %d %b %Y %H:%M:%S GMT")
                 got = get_github_api(repo_url, headers={"If-Modified-Since": last_updated})
             else:
-                # In rare cases, a project can be saved with out a last_updated.
+                # In rare cases, a project can be saved without a last_updated.
                 got = get_github_api(repo_url)
 
         else:
