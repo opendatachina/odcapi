@@ -529,7 +529,6 @@ def get_issues(org_name):
         issues_url = 'https://api.github.com/repos' + path + '/issues'
 
         # Ping github's api for project issues
-        # SELECT name, organization_name FROM project WHERE last_updated_issues IS NULL;
         # :TODO: non-github projects are hitting here and shouldn't be!
         got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
         
