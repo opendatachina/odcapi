@@ -858,7 +858,6 @@ def main(org_name=None, org_sources=None):
             # Get issues for all of the projects
             logging.info("Gathering all of %s's open GitHub issues." % organization.name)
             issues = get_issues(organization.name)
-            #import pdb; pdb.set_trace()
             for issue in issues:
                 save_issue(db.session, issue)
 
