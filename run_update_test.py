@@ -122,7 +122,7 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, '''[ ]''', headers=dict(Link='<https://api.github.com/user/337792/repos?page=1>; rel="prev", <https://api.github.com/user/337792/repos?page=1>; rel="first"'))
 
         # json of meetup events
-        elif match(r'https:\/\/api\.meetup\.com\/2\/events\?status=past,upcoming&format=json&group_urlname=Code-For-Charlotte&key=', url.geturl()):
+        elif 'meetup.com' in url.geturl() and 'Code-For-Charlotte' in url.geturl():
             events_filename = 'meetup_events.json'
             if self.results_state == 'after':
                 events_filename = 'meetup_events_fewer.json'
@@ -133,7 +133,7 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, events_content)
 
         # json of alternate meetup events
-        elif match(r'https:\/\/api\.meetup\.com\/2\/events\?status=past,upcoming&format=json&group_urlname=Code-For-Rhode-Island&key=', url.geturl()):
+        elif 'meetup.com' in url.geturl() and 'Code-For-Rhode-Island' in url.geturl():
             events_file=open('meetup_events_another.json')
             events_content = events_file.read()
             events_file.close()
@@ -914,6 +914,25 @@ class RunUpdateTestCase(unittest.TestCase):
 
         # reset to defaults
         self.organization_count = 3
+
+    def test_bad_events_json(self):
+        ''' Verify that a call for event data that returns bad or no json is handled
+        '''
+        def overwrite_response_content(url, request):
+            if 'meetup.com' in url.geturl() and 'Code-For-Charlotte' in url.geturl():
+                return response(200, 'no json object can be decoded from me')
+
+            elif 'meetup.com' in url.geturl() and 'Code-For-Rhode-Island' in url.geturl():
+                return response(200, None)
+
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                import run_update
+                run_update.main(org_sources="test_org_sources.csv")
+
+        # Make sure no events exist
+        from app import Event
+        self.assertEqual(self.db.session.query(Event).count(), 0)
 
 if __name__ == '__main__':
     unittest.main()
