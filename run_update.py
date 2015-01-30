@@ -84,30 +84,34 @@ def get_meetup_events(organization, group_urlname):
     '''
     meetup_url = "https://api.meetup.com/2/events?status=past,upcoming&format=json&group_urlname={0}&key={1}".format(group_urlname, meetup_key)
     got = get(meetup_url)
-    if got.status_code == 404:
+    if got.status_code in range(400, 499):
         logging.error("%s's meetup page cannot be found" % organization.name)
         return []
     else:
-        results = got.json()['results']
-        events = []
-        for event in results:
-            event = dict(organization_name=organization.name,
-                         name=event['name'],
-                         event_url=event['event_url'],
-                         start_time_notz=format_date(event['time'], event['utc_offset']),
-                         created_at=format_date(event['created'], event['utc_offset']),
-                         utc_offset=event['utc_offset']/1000.0)
+        try:
+            results = got.json()['results']
+            events = []
+            for event in results:
+                event = dict(organization_name=organization.name,
+                             name=event['name'],
+                             event_url=event['event_url'],
+                             start_time_notz=format_date(event['time'], event['utc_offset']),
+                             created_at=format_date(event['created'], event['utc_offset']),
+                             utc_offset=event['utc_offset']/1000.0)
 
-            # Some events don't have descriptions
-            if 'description' in event:
-                description=event['description']
+                # Some events don't have descriptions
+                if 'description' in event:
+                    description=event['description']
 
-            # Some events don't have locations.
-            if 'venue' in event:
-                event['location'] = format_location(event['venue'])
+                # Some events don't have locations.
+                if 'venue' in event:
+                    event['location'] = format_location(event['venue'])
 
-            events.append(event)
-        return events
+                events.append(event)
+            return events
+        except (TypeError, ValueError):
+            return []
+
 
 def get_organizations(org_sources):
     ''' Collate all organizations from different sources.
