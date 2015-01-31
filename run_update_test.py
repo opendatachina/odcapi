@@ -934,5 +934,53 @@ class RunUpdateTestCase(unittest.TestCase):
         from app import Event
         self.assertEqual(self.db.session.query(Event).count(), 0)
 
+    def test_unmodified_projects_stay_in_database(self):
+        ''' Verify that unmodified projects are not deleted from the database
+        '''
+        from app import Organization, Project, Event, Story, Issue, Label
+        import run_update
+
+        test_sources = "test_org_sources.csv"
+
+        self.setup_mock_rss_response()
+
+        # run a standard run_update
+        with HTTMock(self.response_content):
+            run_update.main(org_sources=test_sources)
+
+        # remember how many projects were saved
+        project_count = self.db.session.query(Project).count()
+
+        # save the default response for the cityvoice and bizfriendly projects
+        citivoice_body_text = None
+        citivoice_headers_dict = None
+        bizfriendly_body_text = None
+        bizfriendly_headers_dict = None
+        with HTTMock(self.response_content):
+            from requests import get
+            citivoice_got = get('https://api.github.com/repos/codeforamerica/cityvoice')
+            citivoice_body_text = str(citivoice_got.text)
+            citivoice_headers_dict = citivoice_got.headers
+            bizfriendly_got = get('https://api.github.com/repos/codeforamerica/bizfriendly-web')
+            bizfriendly_body_text = str(bizfriendly_got.text)
+            bizfriendly_headers_dict = bizfriendly_got.headers
+
+        # overwrite to return a 304 (not modified) instead of a 200 for the cityvoice project
+        def overwrite_response_content(url, request):
+            if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
+                return response(304, citivoice_body_text, citivoice_headers_dict)
+            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web':
+                return response(304, bizfriendly_body_text, bizfriendly_headers_dict)
+
+        # re-run run_update with the new 304 responses
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                # run the update on the same orgs
+                run_update.main(org_sources=test_sources)
+
+        # verify that the same number of projects are in the database
+        self.assertEqual(project_count, self.db.session.query(Project).count())
+
+
 if __name__ == '__main__':
     unittest.main()
