@@ -1202,6 +1202,33 @@ class ApiTest(unittest.TestCase):
 
         self.assertTrue(test_passed)
 
+    def test_spaces_in_issues_requests_list(self):
+        ''' Test that spaces in the list of labels works
+        '''
+        # Set up an issue with labels
+        # Try requesting it with spaces in the request
+        # Assert that it returns
+        organization = OrganizationFactory()
+        db.session.commit()
+        project = ProjectFactory(organization_name=organization.name)
+        db.session.commit()
+        issue = IssueFactory(project_id=project.id)
+        db.session.commit()
+        hw_label = LabelFactory(name=u'help wanted', issue_id=issue.id)
+        bug_label = LabelFactory(name=u'bug', issue_id=issue.id)
+        db.session.commit()
+
+        # Test that help wanted works
+        response = self.app.get('/api/issues/labels/help wanted')
+        response = json.loads(response.data)
+        self.assertEqual(len(response['objects']),1)
+
+        # Test that help wanted, bug works
+        response = self.app.get('/api/issues/labels/help wanted, bug')
+        response = json.loads(response.data)
+        self.assertEqual(len(response['objects']),1)
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -709,7 +709,7 @@ def get_orgs_issues(organization_name, labels=None):
 
     if labels:
         # Create a labels list by comma separating the argument
-        labels = labels.split(',')
+        labels = [label.strip() for label in labels.split(',')]
 
         # Create the filter for each label
         labels = [Label.name.ilike('%%%s%%' % label) for label in labels]
@@ -800,7 +800,7 @@ def get_issues_by_labels(labels):
     '''
 
     # Create a labels list by comma separating the argument
-    labels = labels.split(',')
+    labels = [label.strip() for label in labels.split(',')]
 
     # Create the filter for each label
     labels = [Label.name.ilike('%%%s%%' % label) for label in labels]
