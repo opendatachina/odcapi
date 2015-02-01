@@ -118,10 +118,6 @@ The need for a way to show off good civic tech projects was apparent. Several Br
 This repository is forked from [Open City's Civic Json Worker](https://github.com/open-city/civic-json-worker)
 
 ### Future
-All major bug fixes by [December 1st](https://github.com/codeforamerica/cfapi/issues?q=is%3Aopen+is%3Aissue+milestone%3A%22Version+1+Bug+Fixes%22)!
-
-Version 2 by [2015](https://github.com/codeforamerica/cfapi/issues?q=is%3Aopen+is%3Aissue+milestone%3A%22Version+2+Enhancements%22)!
-
 We hope that this experiment of tracking activity within a community is useful for other groups besides the civic technology movement. We will begin working with other groups to see if an instance of the CfAPI is useful for them.
 
 We also want to add support for many more services to be included, such as events from Eventbrite. Our goal is for any organization to use any tool to do their work and we will integrate with them.
