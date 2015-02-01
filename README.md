@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/codeforamerica/cfapi.png?label=ready&title=Ready)](https://waffle.io/codeforamerica/cfapi)
 [![Build Status](https://travis-ci.org/codeforamerica/cfapi.svg?branch=master)](https://travis-ci.org/codeforamerica/cfapi)
 
 # The Code for America API
