@@ -202,7 +202,7 @@
             </p>
             <h4>Endpoint</h4>
             <p>
-                /api/organization/{organization id}
+                /api/organizations/{organization id}
             </p>
             <h4>
                 Organization Properties
@@ -288,13 +288,13 @@
             <p>
                 /api/projects <br>
                 /api/projects?param=value&amp;param2=value2 <br>
-                /api/organization/{organization id}/projects
+                /api/organizations/{organization id}/projects
             </p>
             <h4>Url parameters</h4>
             <dl>
                 You can add any of the <a href="#project-properties">Project properties</a> as a parameter and the API will filter by Organizations that have that property. You can also do request projects based on organization properties such as: <br> <br>
-                /api/project/organization_type=Brigade <br>
-                /api/project/organization_city=San%20Francisco,%20CA
+                /api/projects?organization_type=Brigade <br>
+                /api/projects?organization_city=San%20Francisco,%20CA
             </dl>
             <h4>Response Properties</h4>
             <dl>
@@ -384,7 +384,7 @@
             </p>
             <h4>Endpoint</h4>
             <p>
-                /api/project/{project id}
+                /api/projects/{project id}
             </p>
             <h4>
                 Project Properties
@@ -490,9 +490,9 @@
                 /api/events <br>
                 /api/events/upcoming_events <br/>
 								/api/events/past_events <br/>
-                /api/organization/{organization id}/events <br>
-                /api/organization/{organization id}/events/upcoming_events <br>
-                /api/organization/{organization id}/events/past_events
+                /api/organizations/{organization id}/events <br>
+                /api/organizations/{organization id}/upcoming_events <br>
+                /api/organizations/{organization id}/past_events
             </p>
             <h4>Response Properties</h4>
             <dl>
@@ -554,7 +554,7 @@
             </p>
             <h4>Endpoint</h4>
             <p>
-                /api/event/{event id}
+                /api/events/{event id}
             </p>
             <h4>
                 Event Properties
@@ -616,7 +616,7 @@
             <h4>Endpoints</h4>
             <p>
                 /api/stories <br>
-                /api/organization/{organization id}/stories
+                /api/organizations/{organization id}/stories
             </p>
             <h4>Response Properties</h4>
             <dl>
@@ -666,7 +666,7 @@
             </p>
             <h4>Endpoint</h4>
             <p>
-                /api/story/{story id}
+                /api/stories/{story id}
             </p>
             <h4>
                 Story Properties
@@ -712,8 +712,7 @@
             <h4>Endpoints</h4>
             <p>
                 /api/issues <br>
-                /api/issues/{issue id} <br>
-                /api/issues/labels/{labels}
+                /api/issues/labels/{label name(s)}
             </p>
             <h4>Response Properties</h4>
             <dl>
