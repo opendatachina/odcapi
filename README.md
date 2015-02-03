@@ -277,7 +277,7 @@ Contacts
 * Andrew Hyder ([ondrae](https://github.com/ondrae))
 * Erica Kwan ([pui](https://github.com/pui))
 * Michal Migurski ([migurski](https://github.com/migurski))
-
+* Tomas Apodaca ([tmaybe](https://github.com/tmaybe))
 
 Contributing
 ------------
