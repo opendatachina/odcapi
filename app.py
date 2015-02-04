@@ -41,7 +41,7 @@ manager.add_command('db', MigrateCommand)
 
 make_class_dictable(db.Model)
 
-app.wsgi_app = ProxyFix(application.wsgi_app)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # -------------------
 # Settings
