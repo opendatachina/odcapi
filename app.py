@@ -1011,6 +1011,12 @@ def index():
 @app.route("/api")
 @app.route("/api/")
 def api_index():
+    print dir(request)
+    print request.is_secure
+    print request.scheme
+    print request.url_root
+    print request.url_rule
+    print request.host_url
     return render_template('index.html', api_base='%s://%s' % (request.scheme, request.host))
 
 @app.route("/api/static/<path:path>")
