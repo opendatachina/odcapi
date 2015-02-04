@@ -25,7 +25,7 @@ from dictalchemy import make_class_dictable
 from dateutil.tz import tzoffset
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
-
+from werkzeug.contrib.fixers import ProxyFix
 
 # -------------------
 # Init
@@ -40,6 +40,8 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
 make_class_dictable(db.Model)
+
+app.wsgi_app = ProxyFix(application.wsgi_app)
 
 # -------------------
 # Settings
