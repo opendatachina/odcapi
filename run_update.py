@@ -502,6 +502,7 @@ def get_issues(org_name):
     for project in projects:
         # Mark this project's issues for deletion
         # :::here (issue/false)
+        print '*> issue/false 01 (%s issues in %s (%s))' % (db.session.query(Issue).filter(Issue.project_id == project.id).count(), project.name, project.id)
         db.session.execute(db.update(Issue, values={'keep': False}).where(Issue.project_id == project.id))
 
         # Get github issues api url
@@ -515,16 +516,19 @@ def get_issues(org_name):
 
         # Ping github's api for project issues
         # :TODO: non-github projects are hitting here and shouldn't be!
+        print '+> sending %s Etag of %s' % (project.name, project.last_updated_issues)
         got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
         
         # Verify if content has not been modified since last run
         if got.status_code == 304:
             # :::here (issue/true)
+            print '*> issue/true 01 (%s issues in %s (%s))' % (db.session.query(Issue).filter(Issue.project_id == project.id).count(), project.name, project.id)
             db.session.execute(db.update(Issue, values={'keep': True}).where(Issue.project_id == project.id))
             logging.info('Issues %s have not changed since last update', issues_url)
 
         elif not got.status_code in range(400,499):
             # Update project's last_updated_issue field
+            print '+> setting %s ETag to %s' % (project.name, unicode(got.headers['ETag']))
             project.last_updated_issues = unicode(got.headers['ETag'])
             db.session.add(project)
 
@@ -660,6 +664,7 @@ def save_issue(session, issue):
     else:
         # Preserve the existing issue. 
         # :::here (issue/true)
+        print '*> issue/true 02 (%s in project id %s)' % (issue['title'], existing_issue.project_id)
         existing_issue.keep = True
         # Update existing issue details
         existing_issue.title = issue['title']
@@ -856,6 +861,7 @@ def main(org_name=None, org_sources=None):
 
             # Remove everything marked for deletion.
             # :::here (event/delete, story/delete, project/delete, issue/delete, organization/delete)
+            print '*> deleting false issues (%s of them)' % db.session.query(Issue).filter(Issue.keep == False).count()
             db.session.query(Event).filter(Event.keep == False).delete()
             db.session.query(Story).filter(Story.keep == False).delete()
             db.session.query(Issue).filter(Issue.keep == False).delete()

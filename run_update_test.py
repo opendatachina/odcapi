@@ -97,6 +97,7 @@ class RunUpdateTestCase(unittest.TestCase):
             return response(200, '''{ "all": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 23, 9, 4, 0, 77, 26, 7, 17, 53, 59, 37, 40, 0, 47, 59, 55, 118, 11, 8, 3, 3, 30, 0, 1, 1, 4, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1 ], "owner": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] }''')
 
         # json of project issues (cityvoice, bizfriendly-web)
+        #::::
         elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/issues':
             # build issues dynamically based on results_state value
             issue_lines = ['''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/210","title": "Important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''', '''{"html_url": "https://github.com/codeforamerica/cityvoice/issue/211","title": "More important cityvoice issue", "labels": [ xxx ], "body" : "WHATEVER"}''']
@@ -972,7 +973,7 @@ class RunUpdateTestCase(unittest.TestCase):
             elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web':
                 return response(304, bizfriendly_body_text, bizfriendly_headers_dict)
 
-        # re-run run_update with the new 304 responses
+        # re-run run_update with the new 304 response
         with HTTMock(self.response_content):
             with HTTMock(overwrite_response_content):
                 # run the update on the same orgs
@@ -980,6 +981,62 @@ class RunUpdateTestCase(unittest.TestCase):
 
         # verify that the same number of projects are in the database
         self.assertEqual(project_count, self.db.session.query(Project).count())
+
+    def test_unmodified_projects_issues_stay_in_database(self):
+        ''' Verify that the issues of an unmodified project are not deleted from the database
+        '''
+        from app import Organization, Project, Event, Story, Issue, Label
+        import run_update
+
+        test_sources = "test_org_sources.csv"
+
+        self.setup_mock_rss_response()
+
+        # run a standard run_update
+        with HTTMock(self.response_content):
+            run_update.main(org_sources=test_sources)
+
+        # remember how many issues were saved
+        issue_count = self.db.session.query(Issue).count()
+
+        
+
+        # save the default response for the cityvoice and bizfriendly projects and issues
+        citivoice_body_text = None
+        citivoice_headers_dict = None
+        bizfriendly_body_text = None
+        bizfriendly_headers_dict = None
+        with HTTMock(self.response_content):
+            from requests import get
+            citivoice_got = get('https://api.github.com/repos/codeforamerica/cityvoice')
+            citivoice_body_text = str(citivoice_got.text)
+            citivoice_headers_dict = citivoice_got.headers
+            bizfriendly_got = get('https://api.github.com/repos/codeforamerica/bizfriendly-web')
+            bizfriendly_body_text = str(bizfriendly_got.text)
+            bizfriendly_headers_dict = bizfriendly_got.headers
+
+            issues_got = get('https://api.github.com/repos/codeforamerica/cityvoice/issues')
+            issues_body_text = str(issues_got.text)
+            issues_headers_dict = issues_got.headers
+            #::::
+
+        # overwrite to return a 304 (not modified) instead of a 200 for the projects and issues
+        def overwrite_response_content(url, request):
+            if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
+                return response(304, citivoice_body_text, citivoice_headers_dict)
+            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web':
+                return response(304, bizfriendly_body_text, bizfriendly_headers_dict)
+            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/issues':
+                return response(304, issues_body_text, issues_headers_dict)
+
+        # re-run run_update with the new 304 response
+        with HTTMock(self.response_content):
+            with HTTMock(overwrite_response_content):
+                # run the update on the same orgs
+                run_update.main(org_sources=test_sources)
+
+        # verify that the same number of issues are in the database
+        self.assertEqual(issue_count, self.db.session.query(Issue).count())
 
 
 if __name__ == '__main__':
