@@ -1013,14 +1013,17 @@ def index():
 @app.route("/api")
 @app.route("/api/")
 def api_index():
-    print "-> %s: %s" % ('request.base_url', request.base_url)
-    print "-> %s: %s" % ('request.environ', request.environ)
-    print "-> %s: %s" % ('request.headers', request.headers)
-    print "-> %s: %s" % ('request.host_url', request.host_url)
-    print "-> %s: %s" % ('request.is_secure', request.is_secure)
-    print "-> %s: %s" % ('request.scheme', request.scheme)
-    print "-> %s: %s" % ('request.url', request.url)
-    print "-> %s: %s" % ('request.url_root', request.url_root)
+    try:
+        print "-> %s: %s" % ('request.base_url', request.base_url)
+        print "-> %s: %s" % ('request.environ', request.environ)
+        print "-> %s: %s" % ('request.headers', request.headers)
+        print "-> %s: %s" % ('request.host_url', request.host_url)
+        print "-> %s: %s" % ('request.is_secure', request.is_secure)
+        print "-> %s: %s" % ('request.scheme', request.scheme)
+        print "-> %s: %s" % ('request.url', request.url)
+        print "-> %s: %s" % ('request.url_root', request.url_root)
+    except:
+        pass
 
     return render_template('index.html', api_base='%s://%s' % (request.scheme, request.host))
 
