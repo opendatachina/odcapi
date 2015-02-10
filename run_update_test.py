@@ -106,9 +106,6 @@ class RunUpdateTestCase(unittest.TestCase):
             issue_lines_after = [sub('xxx', ','.join(label_lines[0:1]), issue_lines[0])]
             response_etag = {'ETag': '8456bc53d4cf6b78779ded3408886f82'}
 
-            response_before = ''' [ ''' + ', '.join(issue_lines_before) + ''' ] '''
-            response_after = ''' [ ''' + ', '.join(issue_lines_after) + ''' ] '''
-
             if self.results_state == 'before':
                 return response(200, ''' [ ''' + ', '.join(issue_lines_before) + ''' ] ''', response_etag)
             if self.results_state == 'after':
@@ -999,8 +996,6 @@ class RunUpdateTestCase(unittest.TestCase):
         # remember how many issues were saved
         issue_count = self.db.session.query(Issue).count()
 
-        
-
         # save the default response for the cityvoice and bizfriendly projects and issues
         citivoice_body_text = None
         citivoice_headers_dict = None
@@ -1020,13 +1015,18 @@ class RunUpdateTestCase(unittest.TestCase):
             issues_headers_dict = issues_got.headers
             #::::
 
-        # overwrite to return a 304 (not modified) instead of a 200 for the projects and issues
+        # overwrite to (mostly) return a 304 (not modified) instead of a 200 for projects and issues
         def overwrite_response_content(url, request):
             if url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice':
                 return response(304, citivoice_body_text, citivoice_headers_dict)
             elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web':
                 return response(304, bizfriendly_body_text, bizfriendly_headers_dict)
-            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues' or url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/issues':
+            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/bizfriendly-web/issues':
+                # send a different ETag header with the 200 response
+                from requests import structures
+                new_headers_dict = structures.CaseInsensitiveDict({'ETag': '86f823408878779ded3d4cf6b8456bc5'})
+                return response(200, issues_body_text, new_headers_dict)
+            elif url.geturl() == 'https://api.github.com/repos/codeforamerica/cityvoice/issues':
                 return response(304, issues_body_text, issues_headers_dict)
 
         # re-run run_update with the new 304 response
