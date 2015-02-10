@@ -518,17 +518,19 @@ def get_issues(org_name):
         # :TODO: non-github projects are hitting here and shouldn't be!
         print '+> sending %s Etag of %s' % (project.name, project.last_updated_issues)
         got = get_github_api(issues_url, headers={'If-None-Match': project.last_updated_issues})
-        
-        # Verify if content has not been modified since last run
+        import pdb; pdb.set_trace()
+        print '+> received %s Etag of %s' % (project.name, unicode(got.headers['ETag']))
+
+        # Verify if issues have not been modified since the last run
         if got.status_code == 304:
             # :::here (issue/true)
-            print '*> issue/true 01 (%s issues in %s (%s))' % (db.session.query(Issue).filter(Issue.project_id == project.id).count(), project.name, project.id)
+            print '*> issue/true 01 (%s issues in %s (%s)) (304 response)' % (db.session.query(Issue).filter(Issue.project_id == project.id).count(), project.name, project.id)
             db.session.execute(db.update(Issue, values={'keep': True}).where(Issue.project_id == project.id))
             logging.info('Issues %s have not changed since last update', issues_url)
 
         elif not got.status_code in range(400,499):
             # Update project's last_updated_issue field
-            print '+> setting %s ETag to %s' % (project.name, unicode(got.headers['ETag']))
+            print '+> setting %s ETag to %s (200 response)' % (project.name, unicode(got.headers['ETag']))
             project.last_updated_issues = unicode(got.headers['ETag'])
             db.session.add(project)
 
