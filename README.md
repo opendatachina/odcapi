@@ -2,9 +2,12 @@
 The code is forked from cfapi. 
 
 Will test it on Heroku
+
 Will do translation
+
 Will tweak the api according to specific needs from the community
-=========
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 [![Stories in Ready](https://badge.waffle.io/codeforamerica/cfapi.png?label=ready&title=Ready)](https://waffle.io/codeforamerica/cfapi)
